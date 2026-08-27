@@ -1,7 +1,5 @@
-import { Config } from "@react-router/dev/config";
-
 /**
- * @type {Config}
+ * @type {import('@react-router/dev/config').Config}
  */
 export default {
   // Config options...
