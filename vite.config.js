@@ -9,7 +9,4 @@ export default defineConfig({
     tailwindcss(),
     reactRouter(),
   ],
-  resolve: {
-    tsconfigPaths: true,
-  },
 });

@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "utile-os-launchpad",
 	"compatibility_date": "2026-08-25",
-	"main": "./workers/app.ts",
+	"main": "./workers/app.js",
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
 	},

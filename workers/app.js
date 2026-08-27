@@ -9,4 +9,4 @@ export default {
   async fetch(request) {
     return requestHandler(request);
   },
-} satisfies ExportedHandler<Env>;
+};
