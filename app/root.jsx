@@ -5,6 +5,7 @@ import {
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	useNavigate,
 } from "react-router";
 
 import './app.scss';
@@ -47,11 +48,11 @@ export function Layout({ children }) {
 				{/* Embed Data */}
 					{/* Twitter, not X */}
 					<meta content="summary" property="twitter:card" />
-					<meta content="Utile OS Launchpad" property="twitter:title" />
+					<meta content="The Utile OS Smithy" property="twitter:title" />
 					<meta content="/logo_original.png" property="twitter:image" />
 
 					{/* Open Graph */}
-					<meta content="Utile OS Launchpad" property="og:site_name" />
+					<meta content="The Utile OS Smithy" property="og:site_name" />
 
 					<meta content="/logo_original.png" property="og:image" />
 					<meta name="theme-color" content="#1A5E63" />
@@ -76,6 +77,8 @@ export function Layout({ children }) {
 }
 
 export default function App() {
+	const navigate = useNavigate();
+
 	useEffect(() => {
 		applyTheme('dark')
 	}, []);
@@ -85,25 +88,53 @@ export default function App() {
 			<Navigation
 				items={[
 					{
-						label: 'Home',
-						url: '/'
-					}, {
-						label: 'Packages',
-						url: '#'
-					}, {
 						label: 'Archives',
-						url: '#'
+						url: '/archives'
 					}, {
 						label: 'Maintainers',
 						url: '#'
 					}, {
 						label: 'Bugs',
 						url: '#'
+					}, {
+						label: 'User Wiki',
+						url: '#'
+					}, {
+						label: 'Developer Docs',
+						url: '#'
 					}
 				]}
-				logo={<img src={logo} height='32px' alt='Logo' loading='lazy' />}
+				logo={<img style={{ cursor: 'pointer' }} onClick={() => navigate('/')} src={logo} height='32px' alt='Logo' loading='lazy' />}
 			/>
 			<Outlet />
+			<hr />
+			<footer className='l-footer--sticky p-strip'>
+				<div className='l-docs__subgrid'>
+					<div className='l-docs__sidebar u-fixed-width'>
+						<p>Licensed GPLv3</p>
+					</div>
+					<div className='l-docs__main'>
+						<Row>
+							<nav className='col-3' aria-label='Footer'>
+								<ul className='p-list'>
+									<li className='p-list__item'>
+										<a href='https://github.com/Proman4713/Utile-OS'>OS Build Repository</a>
+									</li>
+									<li className='p-list__item'>
+										<a href='https://github.com/Proman4713/Utile-OS-Debian'>Package Sources</a>
+									</li>
+									<li className='p-list__item'>
+										<a href='https://github.com/Proman4713/Utile-OS-Smithy'>Smithy Source</a>
+									</li>
+								</ul>
+							</nav>
+							<Col size={9}>
+								<p>Smithy is part of the <a href='https://utile-os-web.mailworker.workers.dev/about'>Utile OS project</a>, a minimum-friction Linux desktop. <a href='https://buymeacoffee.com/codeswallop'>Support it if you can</a>.</p>
+							</Col>
+						</Row>
+					</div>
+				</div>
+			</footer>
 		</>
 	);
 }
@@ -131,6 +162,7 @@ export function ErrorBoundary({ error }) {
 	const [highlightedCode, setHighlightedCode] = useState('');
 
 	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
 		if (stack) setHighlightedCode(JSXParse(hljs.highlight(stack, { language: 'javascript' }).value));
 	}, [stack]);
 
