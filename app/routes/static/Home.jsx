@@ -4,7 +4,7 @@ import { Button, Col, Row } from '@canonical/react-components';
  * @type {import('react-router').MetaFunction}
  */
 export const meta = () => [
-	{ title: 'Utile OS Launchpad' }
+	{ title: 'Smithy — Utile OS' }
 ];
 
 export default function Home() {
@@ -14,8 +14,8 @@ export default function Home() {
 				<div className='row--25-75'>
 					<div className='col'>
 						<div className='p-section--shallow'>
-							<h1>Utile OS Launchpad</h1>
-							<h2>Manage Utile OS's package archives.</h2>
+							<h1>The utile (as in useful) Smithy</h1>
+							<h2>Utile OS&apos;s package archive management service.</h2>
 						</div>
 						<Button appearance='positive'>
 							Upload
@@ -34,12 +34,22 @@ export default function Home() {
 					<hr />
 					<Col size={6}>
 						<h2>Built on the Vanilla UI framework</h2>
-						<p>The Utile OS XYZ is easy to use for our maintainers <i>and</i> amazing end users.</p> {/* Funny how 'we' have NO users lol, still gotta call them amazing */}
+						{/* Funny how 'we' have NO users lol, still gotta call them amazing */}
+						<p>The Utile OS Smithy is easy to use for our maintainers <i>and</i> amazing end users. It's a functional interface for all of our software packages and bug reports.</p>
 					</Col>
 					<Col size={6}>
-						<h2>Built on Canonical's Vanilla Framework</h2>
-						<h3>Beautiful for maintainers and users.</h3>
+						<h2>Designed for scalability</h2>
+						<p>While our approaches may change at any point, this interface is pragmatically designed to present information as best as it can, no matter what happens on the back end</p>
 					</Col>
+				</Row>
+			</div>
+			<div className='p-section'>
+				<Row>
+					<hr />
+					<div className='col'>
+						<h2>Start smithing</h2>
+						<p>&lsquo;Smithy&lsquo; is a word for &lsquo;forge&lsquo;, just like &lsquo;utile&lsquo; is a word for &lsquo;useful&lsquo;. Get started smithing some packages for Utile OS by <a href="#">becoming a maintainer.</a></p>
+					</div>
 				</Row>
 			</div>
 		</>
