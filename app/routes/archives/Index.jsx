@@ -1,16 +1,8 @@
-import { Col, MainTable, MultiSelect, Row, SearchBox } from '@canonical/react-components';
+import { Button, Card, Col, MultiSelect, Row, SearchBox } from '@canonical/react-components';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
-
-/**
- * @typedef {{ name: string, version: string, component: "main" | "universe" | "upstream", suite: string, section: string, description: string, filename: string, architecture: "amd64" | "arm64" }} ArchivePackage
- * @type {ArchivePackage}
- */
-const ArchivePackage = {};
-
-const architectures = ['amd64'];
-const suites = ['abstract'];
-const components = ['main', 'universe', 'upstream'];
+import { useSearchParams } from 'react-router';
+import Fuse from 'fuse.js';
+import { architectures, ArchivePackage, components, loadArchivePackages, suites } from '../../contexts/PackageManagement';
 
 /**
  * @type {import('react-router').MetaFunction}
@@ -19,61 +11,78 @@ export const meta = () => [
 	{ title: 'Archives — Smithy — Utile OS' }
 ];
 
+/**
+ * @type {import('react-router').LoaderFunction}
+ */
 export async function loader() {
-	let data = {
-		architectures,
-		suites,
-		components,
-		/**
-		 * @type {ArchivePackage[]}
-		 */
-		packages: []
-	};
-
-	for (const suite of data.suites) {
-		for (const architecture of data.architectures) {
-			for (const component of data.components) {
-				const response = await fetch(`${import.meta.env.VITE_APP_ARCHIVE_URL}/dists/${suite}/${component}/binary-${architecture}/Packages`);
-				if (!response.ok) return { failed: true };
-
-				const htmlContent = await response.text();
-				const packages = htmlContent.split('\n\n').map(block => {
-					const lines = block.split('\n');
-					const obj = { _component: component };
-					lines.forEach(line => {
-						const [key, ...val] = line.split(': ');
-						if (key) obj[key] = val.join(': ');
-					});
-					return obj;
-				}).filter(p => p.Package);
-
-				for (const pkg of packages) {
-					data.packages.push({
-						architecture,
-						component,
-						suite,
-
-						description: pkg.Description,
-						filename: pkg.Filename,
-						name: pkg.Package,
-						section: pkg.Section,
-						version: pkg.Version
-					})
-				}
-			}
-		}
-	}
-
-	return data;
+	return await loadArchivePackages();
 }
 
 export default function Index({ loaderData }) {
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [query, setQuery] = useState(searchParams.get('q') || '');
+	const [searchText, setSearchText] = useState(searchParams.get('q') || '');
+	const [filteredSuites, setFilteredSuites] = useState(
+		searchParams.get('suites')?.split(',').map(suite => ({ label: suite, value: suite })) ||
+		[{
+			label: suites[suites.length - 1],
+			value: suites[suites.length - 1]
+		}] // Latest by default
+	);
+	const [filteredComponents, setFilteredComponents] = useState(
+		searchParams.get('components')?.split(',').map(component => ({ label: component, value: component })) ||
+		components.map(component => ({ label: component, value: component })) // All by default
+	);
 
 	const handleSearch = useCallback(() => {
-		setSearchParams(`?q=${query}`)
-	}, [query]);
+		setSearchParams(`?q=${searchText}&suites=${filteredSuites.map(k => k.value).join(',')}&components=${filteredComponents.map(k => k.value).join(',')}`);
+	}, [filteredComponents, filteredSuites, searchText, setSearchParams]);
+
+	const [isMounted, setIsMounted] = useState(false);
+	useEffect(() => {
+		// eslint-disable-next-line react-hooks/set-state-in-effect
+		setIsMounted(true); // MultiSelect uses ContextualMenu, which uses window, so we need to delay its rendering until mounting
+	}, []);
+
+	const clearOrSelectAll = useCallback((items, mode='suites') => {
+		// Clear button
+		if (items.length === 0) {
+			// One suite must always be active
+			mode === 'suites'
+				? setFilteredSuites([filteredSuites[0]])
+				: setFilteredComponents([filteredComponents[0]]);
+			return;
+		}
+		// Select all
+		(mode === 'suites'
+			? setFilteredSuites
+			: setFilteredComponents)(
+				prev => {
+					const notSelected = (mode === 'suites'
+						? suites
+						: components)
+							.filter(item => !prev.some(k => k.value === item))
+							.map(item => ({ label: item, value: item }));
+
+					return [...prev, ...notSelected]
+				}
+			);
+	}, [filteredComponents, filteredSuites]);
+
+	//^ Searching
+	const packageFuse = useMemo(() => new Fuse(loaderData.packages, { keys: ['name'], includeScore: true }), [loaderData]);
+	const searchResults = useMemo(() => {
+		const query = searchParams.get('q');
+		if (query) {
+			const exactPackageMatches = loaderData.packages.filter(pkg => pkg.name === query);
+			if (exactPackageMatches.length) return exactPackageMatches;
+
+			const packageMatches = packageFuse.search(query).sort((a, b) => a.score - b.score).map(r => r.item);
+
+			return packageMatches;
+		}
+		return [];
+	}, [loaderData.packages, packageFuse, searchParams]);
+	const isSearchActive = !!searchParams.get('q');
 
 	return (
 		<>
@@ -85,80 +94,99 @@ export default function Index({ loaderData }) {
 							<h2>Utile OS&apos;s Debian package archives.</h2>
 							<p>There are currently <b>{loaderData.packages.length}</b> packages in the Utile OS archives.</p>
 						</div>
-						<form onSubmit={ev => {
-							ev.preventDefault();
-							handleSearch();
-						}}>
-							<SearchBox
-								externallyControlled
-								searchButtonType='submit'
-								placeholder='Search Packages...'
-								value={query}
-								onChange={(val) => setQuery(val)}
-								onSearch={handleSearch}
-							/>
-						</form>
+						<div className='row'>
+							<Col size={5}>
+								<form onSubmit={ev => {
+									ev.preventDefault();
+									handleSearch();
+								}}>
+									<SearchBox
+										externallyControlled
+										searchButtonType='submit'
+										placeholder='Search Packages...'
+										value={searchText}
+										onChange={(val) => setSearchText(val)}
+										onSearch={handleSearch}
+									/>
+								</form>
+							</Col>
+							{isMounted
+							&& <Col size={2}>
+								<MultiSelect
+									help={<span>Suites (at least one)</span>}
+									items={suites.map(suite => ({
+										label: suite,
+										value: suite
+									}))}
+									onDeselectItem={item => {
+										const newArray = filteredSuites.filter(k => k.value !== item.value);
+										if (newArray.length <= 0) return; // At least one must be active
+										setFilteredSuites(newArray);
+									}}
+									onSelectItem={item => {
+										setFilteredSuites([...filteredSuites, item])
+									}}
+									onItemsUpdate={clearOrSelectAll}
+									selectedItems={filteredSuites}
+									variant='condensed'
+								/>
+							</Col>}
+							{isMounted
+							&& <Col size={2}>
+								<MultiSelect
+									help={<span>Components (at least one)</span>}
+									items={components.map(comp => ({
+										label: comp,
+										value: comp
+									}))}
+									onDeselectItem={item => {
+										const newArray = filteredComponents.filter(k => k.value !== item.value);
+										if (newArray.length <= 0) return;
+										setFilteredComponents(newArray);
+									}}
+									onSelectItem={item => {
+										setFilteredComponents([...filteredComponents, item])
+									}}
+									onItemsUpdate={items => clearOrSelectAll(items, 'comps')}
+									selectedItems={filteredComponents}
+									variant='condensed'
+								/>
+							</Col>}
+						</div>
 					</div>
 				</div>
 			</div>
 			<div className='p-section'>
 				<Row>
-					<Col size={3}>
-						<h2>Search Results:</h2>
+					<Col size={12}>
+						<h2>Packages:</h2>
 					</Col>
-					{/* <Col size={2}>
-						<MultiSelect
-							help={<span>Suites</span>}
-							items={suites.map(comp => ({
-								label: comp,
-								value: comp
-							}))}
-							onItemsUpdate={() => { }}
-							selectedItems={[{
-								label: 'abstract',
-								value: 'abstract'
-							}]}
-							variant='condensed'
-						/>
-					</Col>
-					<Col size={2}>
-						<MultiSelect
-							help={<span>Architectures</span>}
-							items={architectures.map(comp => ({
-								label: comp,
-								value: comp
-							}))}
-							onItemsUpdate={() => { }}
-							selectedItems={architectures.map(comp => ({
-								label: comp,
-								value: comp
-							}))}
-							variant='condensed'
-						/>
-					</Col>
-					<Col size={2}>
-						<MultiSelect
-							help={<span>Components</span>}
-							items={components.map(comp => ({
-								label: comp,
-								value: comp
-							}))}
-							onItemsUpdate={() => { }}
-							selectedItems={components.map(comp => ({
-								label: comp,
-								value: comp
-							}))}
-							variant='condensed'
-						/>
-					</Col> */}
 				</Row>
 				<Row>
-					{/* <MainTable
-						headers={[]}
-					/> */}
-					{loaderData.packages.map((pkg, i) => (
-						<h3 key={i}>{pkg.name}</h3>
-					))}
+					{loaderData.packages
+						.filter(pkg => filteredSuites.some(k => k.value === pkg.suite))
+						.filter(pkg => filteredComponents.some(k => k.value === pkg.component))
+						.filter(pkg => !isSearchActive || searchResults.some(resultPkg => resultPkg.name === pkg.name)) // Don't filter if search isn't active
+						.map((pkg, i) => (
+							<Card
+								key={i}
+								title={
+									<span>
+										<a href={`/archives/${pkg.suite}/${pkg.component}/${pkg.name}`}>{pkg.name}</a> ({pkg.version}) <span style={{ opacity: 0.3 }}>[{pkg.component}]</span>
+									</span>
+								}
+							>
+								<span style={{ display: 'block' }}>{pkg.description} — {pkg.section}</span>
+								<Button
+									appearance='positive'
+									style={{ marginTop: 16 }}
+									onClick={() => window.open(`${import.meta.env.VITE_APP_ARCHIVE_URL}/${pkg.filename}`, '_blank')}
+								>
+									Download
+								</Button>
+							</Card>
+						))
+					}
 				</Row>
 			</div>
 		</>

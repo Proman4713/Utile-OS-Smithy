@@ -13,12 +13,8 @@ import { useEffect, useState } from 'react';
 import { applyTheme, CodeSnippet, Col, Navigation, Row } from '@canonical/react-components';
 import logo from './assets/SVGs/logo-transparent.svg'
 
-import hljs from 'highlight.js';
-import javascript from 'highlight.js/lib/languages/javascript';
-import 'highlight.js/styles/github-dark.css';
-import JSXParse from 'html-react-parser';
-
-hljs.registerLanguage('javascript', javascript);
+import { PackageProvider } from './contexts/PackageManagement';
+import Codeblock from './components/UI/Codeblock';
 
 /**
  * @type {import("react-router").LinksFunction}
@@ -76,7 +72,7 @@ export function Layout({ children }) {
 	);
 }
 
-export default function App() {
+export default function App({ loaderData }) {
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -84,7 +80,7 @@ export default function App() {
 	}, []);
 
 	return (
-		<>
+		<PackageProvider>
 			<Navigation
 				items={[
 					{
@@ -135,7 +131,7 @@ export default function App() {
 					</div>
 				</div>
 			</footer>
-		</>
+		</PackageProvider>
 	);
 }
 
@@ -159,26 +155,15 @@ export function ErrorBoundary({ error }) {
 		applyTheme('dark');
 	}, []);
 
-	const [highlightedCode, setHighlightedCode] = useState('');
-
-	useEffect(() => {
-		// eslint-disable-next-line react-hooks/set-state-in-effect
-		if (stack) setHighlightedCode(JSXParse(hljs.highlight(stack, { language: 'javascript' }).value));
-	}, [stack]);
-
 	return (
 		<div className='p-section'>
 			<Row>
 				<Col>
 					<h1>{message}</h1>
 					<p>{details}</p>
-					{stack && <CodeSnippet
-						blocks={[
-							{
-								title: 'Error Stack',
-								code: highlightedCode
-							}
-						]}
+					{stack && <Codeblock
+						code={stack}
+						title='Error Stack'
 					/>}
 				</Col>
 			</Row>

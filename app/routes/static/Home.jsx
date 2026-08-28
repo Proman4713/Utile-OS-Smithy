@@ -35,7 +35,7 @@ export default function Home() {
 					<Col size={6}>
 						<h2>Built on the Vanilla UI framework</h2>
 						{/* Funny how 'we' have NO users lol, still gotta call them amazing */}
-						<p>The Utile OS Smithy is easy to use for our maintainers <i>and</i> amazing end users. It's a functional interface for all of our software packages and bug reports.</p>
+						<p>The Utile OS Smithy is easy to use for our maintainers <i>and</i> amazing end users. It&apos;s a functional interface for all of our software packages and bug reports.</p>
 					</Col>
 					<Col size={6}>
 						<h2>Designed for scalability</h2>
