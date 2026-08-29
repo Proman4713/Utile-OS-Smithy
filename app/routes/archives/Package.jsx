@@ -1,4 +1,4 @@
-import { data, useParams } from 'react-router';
+import { data, Link, useParams } from 'react-router';
 import { ArchivePackage, loadArchivePackages } from '../../contexts/PackageManagement';
 import { useMemo, useState } from 'react';
 import { Button, Col, List, MainTable, Row } from '@canonical/react-components';
@@ -15,6 +15,7 @@ export const meta = ({ params }) => [
 
 /**
  * @type {import('react-router').LoaderFunction}
+ * @param {import('react-router').LoaderFunctionArgs} param0
  */
 export async function loader({ params }) {
 	const { name, suite, component } = params;
@@ -135,7 +136,7 @@ export default function Package({ loaderData }) {
 										}, {
 											content: null
 										}, {
-											content: <a href={null}>{null}</a>
+											content: <Link to={null}>{null}</Link>
 										}, {
 											content: <>
 												<Button

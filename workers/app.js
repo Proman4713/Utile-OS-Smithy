@@ -3,6 +3,7 @@ import {
 } from 'react-router';
 import { CommonData } from '../api/utils/common';
 import DBProvider from '../api/utils/DBProvider';
+import { D1Database } from '@cloudflare/workers-types';
 
 const requestHandler = createRequestHandler(
 	() => import('virtual:react-router/server-build'),
@@ -35,11 +36,12 @@ const modules = import.meta.glob("../api/routes/**/*.js");
 /** 
  *
  * @param {Request} request - the incoming request object
- * @param {{ GH_CLIENT_ID: string, GH_CLIENT_SECRET: string }} env 
+ * @param {{ GH_CLIENT_ID: string, GH_CLIENT_SECRET: string, DB: D1Database }} env 
  * @return {Promise<Response>} the response object containing the result of the database operation or an error message
  */
 async function runWorker(request, env) {
 	await DBProvider.initOctokit(env.GH_CLIENT_ID, env.GH_CLIENT_SECRET);
+	DBProvider.init(env.DB);
 
 	const url = new URL(request.url);
 	let path = url.pathname.slice(1);

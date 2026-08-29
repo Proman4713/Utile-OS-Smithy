@@ -11,9 +11,6 @@ importers:
       '@canonical/react-components':
         specifier: ^4.10.2
         version: 4.10.2(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(formik@2.4.9(@types/react@19.2.18)(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@10.2.2)(vanilla-framework@4.58.0(sass@1.103.1))
-      '@eslint/js':
-        specifier: ^10.0.1
-        version: 10.0.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
       '@fortawesome/fontawesome-svg-core':
         specifier: ^7.3.1
         version: 7.3.1
@@ -32,12 +29,6 @@ importers:
       '@octokit/auth-oauth-app':
         specifier: ^9.0.4
         version: 9.0.4
-      eslint-plugin-react:
-        specifier: ^7.37.5
-        version: 7.37.5(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
-      eslint-plugin-react-hooks:
-        specifier: ^7.1.1
-        version: 7.1.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       fuse.js:
         specifier: ^7.5.0
         version: 7.5.0
@@ -71,25 +62,37 @@ importers:
       vanilla-framework:
         specifier: ^4.58.0
         version: 4.58.0(sass@1.103.1)
-      vite-plugin-eslint:
-        specifier: ^1.8.1
-        version: 1.8.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))
     devDependencies:
       '@cloudflare/vite-plugin':
         specifier: ^1.54.1
-        version: 1.54.1(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0)
+        version: 1.54.1(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0(@cloudflare/workers-types@5.20260828.1))
+      '@cloudflare/workers-types':
+        specifier: ^5.20260828.1
+        version: 5.20260828.1
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
       '@react-router/dev':
         specifier: ^8
-        version: 8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@10.2.2)(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0)
+        version: 8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@10.2.2)(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0(@cloudflare/workers-types@5.20260828.1))
       eslint:
         specifier: ^9.39.5
         version: 9.39.5(jiti@2.7.0)(supports-color@10.2.2)
+      eslint-plugin-react:
+        specifier: ^7.37.5
+        version: 7.37.5(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))
+      eslint-plugin-react-hooks:
+        specifier: ^7.1.1
+        version: 7.1.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       vite:
         specifier: ^8.0.3
         version: 8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)
+      vite-plugin-eslint:
+        specifier: ^1.8.1
+        version: 1.8.1(eslint@9.39.5(jiti@2.7.0)(supports-color@10.2.2))(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))
       wrangler:
         specifier: ^4.127.0
-        version: 4.127.0
+        version: 4.127.0(@cloudflare/workers-types@5.20260828.1)
 
 packages:
 
@@ -284,6 +287,9 @@ packages:
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
+
+  '@cloudflare/workers-types@5.20260828.1':
+    resolution: {integrity: sha512-Ce0QfghuAK9v821gER8rFPR3rMeC+5puTgTzCu4UrG1Zg967Z5Aa+2uZVciIyfCAdGssyh+sLEC6rMjN/YBQwA==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -2995,14 +3001,14 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260826.1
 
-  '@cloudflare/vite-plugin@1.54.1(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0)':
+  '@cloudflare/vite-plugin@1.54.1(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0(@cloudflare/workers-types@5.20260828.1))':
     dependencies:
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260826.1)
       miniflare: 5.20260826.0-alpha
       unenv: 2.0.0-rc.24
       vite: 8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)
       workerd: 1.20260826.1
-      wrangler: 4.127.0
+      wrangler: 4.127.0(@cloudflare/workers-types@5.20260828.1)
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
@@ -3022,6 +3028,8 @@ snapshots:
 
   '@cloudflare/workerd-windows-64@1.20260826.1':
     optional: true
+
+  '@cloudflare/workers-types@5.20260828.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -3652,7 +3660,7 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@react-router/dev@8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@10.2.2)(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0)':
+  '@react-router/dev@8.3.0(react-router@8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(supports-color@10.2.2)(vite@8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1))(wrangler@4.127.0(@cloudflare/workers-types@5.20260828.1))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@10.2.2)
       '@babel/generator': 7.29.8
@@ -3683,7 +3691,7 @@ snapshots:
       valibot: 1.4.2
       vite: 8.2.2(@types/node@20.19.30)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.103.1)
     optionalDependencies:
-      wrangler: 4.127.0
+      wrangler: 4.127.0(@cloudflare/workers-types@5.20260828.1)
     transitivePeerDependencies:
       - babel-plugin-macros
       - supports-color
@@ -5596,7 +5604,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20260826.1
       '@cloudflare/workerd-windows-64': 1.20260826.1
 
-  wrangler@4.127.0:
+  wrangler@4.127.0(@cloudflare/workers-types@5.20260828.1):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
       '@cloudflare/unenv-preset': 2.16.1(unenv@2.0.0-rc.24)(workerd@1.20260826.1)
@@ -5607,6 +5615,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       workerd: 1.20260826.1
     optionalDependencies:
+      '@cloudflare/workers-types': 5.20260828.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil

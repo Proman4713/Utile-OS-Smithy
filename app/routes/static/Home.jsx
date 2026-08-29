@@ -1,4 +1,5 @@
 import { Button, Col, Row } from '@canonical/react-components';
+import { Link } from 'react-router';
 
 /**
  * @type {import('react-router').MetaFunction}
@@ -48,7 +49,7 @@ export default function Home() {
 					<hr />
 					<div className='col'>
 						<h2>Start smithing</h2>
-						<p>&lsquo;Smithy&lsquo; is a word for &lsquo;forge&lsquo;, just like &lsquo;utile&lsquo; is a word for &lsquo;useful&lsquo;. Get started smithing some packages for Utile OS by <a href="#">becoming a maintainer.</a></p>
+						<p>&lsquo;Smithy&lsquo; is a word for &lsquo;forge&lsquo;, just like &lsquo;utile&lsquo; is a word for &lsquo;useful&lsquo;. Get started smithing some packages for Utile OS by <Link to="#">becoming a maintainer.</Link></p>
 					</div>
 				</Row>
 			</div>

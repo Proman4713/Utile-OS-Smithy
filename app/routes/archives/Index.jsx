@@ -1,6 +1,6 @@
 import { Button, Card, Col, MultiSelect, Row, SearchBox } from '@canonical/react-components';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import Fuse from 'fuse.js';
 import { architectures, ArchivePackage, components, loadArchivePackages, suites } from '../../contexts/PackageManagement';
 
@@ -13,6 +13,7 @@ export const meta = () => [
 
 /**
  * @type {import('react-router').LoaderFunction}
+ * @param {import('react-router').LoaderFunctionArgs} param0
  */
 export async function loader() {
 	return await loadArchivePackages();
@@ -172,7 +173,7 @@ export default function Index({ loaderData }) {
 								key={i}
 								title={
 									<span>
-										<a href={`/archives/${pkg.suite}/${pkg.component}/${pkg.name}`}>{pkg.name}</a> ({pkg.version}) <span style={{ opacity: 0.3 }}>[{pkg.component}]</span>
+										<Link to={`/archives/${pkg.suite}/${pkg.component}/${pkg.name}`}>{pkg.name}</Link> ({pkg.version}) <span style={{ opacity: 0.3 }}>[{pkg.component}]</span>
 									</span>
 								}
 							>

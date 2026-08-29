@@ -1,9 +1,10 @@
 import { Octokit } from 'octokit';
 import { CommonData } from '../../utils/common';
 import createRouteDefinition from '../../utils/createRouteDefinition';
-import DBProvider from '../../utils/DBProvider';
+import DBProvider, { DBUser, User } from '../../utils/DBProvider';
 import { getCookie, refreshAccessToken, userOctokitWithRetry } from '../../utils/toolkit';
 
+// TODO: Change this to somehow load the correct OAuth method depending on the provided cookies?
 export default createRouteDefinition(
 	async (request, path, ghClientSecret, ghClientId) => {
 		let scopes = [];
@@ -28,13 +29,13 @@ export default createRouteDefinition(
 		let authResult;
 		try {
 			authResult = await userOctokitWithRetry('GET /user', {
-				octokit: new Octokit({ auth: accessToken })
+				octokit: DBProvider.initUserOctokit(accessToken)
 			}, 2, async (octokitInstance) => {
 				const refreshRequest = await refreshAccessToken(ghClientSecret, ghClientId, refreshToken);
 
 				if (refreshRequest) {
 					// Objects are passed by reference, so we should be able to directly modify it for the fetch function; however, this is difficult to test
-					octokitInstance.octokit = new Octokit({ auth: refreshRequest.accessToken });
+					octokitInstance.octokit = DBProvider.initUserOctokit(refreshRequest.accessToken);
 					accessToken = refreshRequest.accessToken;
 					accessTokenAge = refreshRequest.accessTokenAge;
 					refreshToken = refreshRequest.refreshToken;
@@ -88,7 +89,53 @@ export default createRouteDefinition(
 		if (refreshToken !== currentRefreshToken)
 			responseHeaders.append('Set-Cookie', `refresh_token=${refreshToken}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${refreshTokenAge}`);
 
-		return new Response(JSON.stringify(authResult.data), {
+		/**
+		 * @type {User}
+		 */
+		let userData;
+
+		/**
+		 * @type {{ results: DBUser[] }}
+		 */
+		const { results } = await DBProvider.DB
+			.prepare('SELECT * FROM users WHERE github_id = ?')
+			.bind(authResult.data.id)
+			.run();
+
+		/*
+			A user was never created on our database for this GitHub connection, create one
+			TODO: This means we automatically assume a user never existed, not that perhaps the user is only adding a new connection. Again, this needs to be changed
+			TODO:	once we decide to allow multiple OAuth integrations
+		*/
+		if (results.length === 0) {
+			/**
+			 * @type {DBUser}
+			 */
+			const createdUser = await DBProvider.DB
+				.prepare(`INSERT INTO users (github_name, github_id, username, display_name, email) VALUES(?, ?, ?, ?, ${authResult.data.email ? '?' : 'NULL'}) RETURNING *`)
+				.bind(
+					authResult.data.name,
+					authResult.data.id,
+					authResult.data.name.toLowerCase(),
+					authResult.data.name,
+					...(authResult.data.email ? [authResult.data.email] : [])
+				)
+				.first();
+			userData = DBProvider.parseAppUserFromDBUser(createdUser);
+		} else {
+			// github_id is a UNIQUE column, so there will only be one result anyway
+			userData = DBProvider.parseAppUserFromDBUser(results[0]);
+
+			// Update database name to match if the user changed their username
+			if (results[0].github_name !== authResult.data.name) {
+				await DBProvider.DB
+					.prepare('UPDATE users SET github_name = ? WHERE github_id = ?')
+					.bind(authResult.data.name, authResult.data.id)
+					.run();
+			}
+		}
+
+		return new Response(JSON.stringify(userData), {
 			headers: responseHeaders,
 			status: 200
 		})

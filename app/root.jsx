@@ -1,10 +1,12 @@
 import {
 	isRouteErrorResponse,
+	Link,
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
+	useLocation,
 	useNavigate,
 } from "react-router";
 
@@ -15,7 +17,7 @@ import logo from './assets/SVGs/logo-transparent.svg'
 
 import { PackageProvider } from './contexts/PackageManagement';
 import Codeblock from './components/UI/Codeblock';
-import { AccountContext, AccountProvider } from './contexts/AccountManagement';
+import { AccountContext } from './contexts/AccountManagement';
 
 /**
  * @type {import("react-router").LinksFunction}
@@ -76,6 +78,7 @@ export function Layout({ children }) {
 // Needs to be in a wrapper component to use the auth context
 function AppNavBar() {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { isAuthenticated, userData } = useContext(AccountContext);
 
 	return (
@@ -83,7 +86,8 @@ function AppNavBar() {
 			items={[
 				{
 					label: 'Archives',
-					url: '/archives'
+					url: '/archives',
+					isSelected: location.pathname.startsWith('/archives')
 				}, {
 					label: 'Maintainers',
 					url: '#'
@@ -100,25 +104,99 @@ function AppNavBar() {
 			]}
 			itemsRight={[{
 				alignRight: true,
-				label: userData.name || 'Log In',
+				label: isAuthenticated ? userData.displayName : 'Log In',
 				[!isAuthenticated ? 'url' : null]: `https://github.com/login/oauth/authorize?scope=user:email+offline_access&client_id=${import.meta.env.VITE_APP_GH_CLIENT_ID}`,
 				[isAuthenticated ? 'items' : null]: [{
 					label: 'Account',
-					url: '/account'
+					url: `/account/${userData.username}`
+				}, {
+					label: 'Log Out',
+					url: '#',
+					onclick: () => {}
 				}]
 			}]}
 			logo={<img style={{ cursor: 'pointer' }} onClick={() => navigate('/')} src={logo} height='32px' alt='Logo' loading='lazy' />}
+
+			generateLink={({ url, label, ...props }) => {
+				if (url.startsWith('http')) {
+					return (
+						<a href={url} {...props}>
+							{label}
+						</a>
+					)
+				}
+
+				return (
+					<Link to={url} {...props}>
+						{label}
+					</Link>
+				)
+			}}
 		/>
 	)
 }
 
+/**
+ * @type {import('react-router').LoaderFunction}
+ * @param {import('react-router').LoaderFunctionArgs} param0 
+ */
+export async function loader({ request }) {
+	/*
+		TODO: Multiple OAuth methods. I would use the custom authentication flow I made for other projects (that didn't need to rely on any
+		TODO:	external OAuth), but I think I should start fresh with Smithy.
+
+		! I will NOT have my loaders serve as the API, or this codebase will become as 'readable' as sign language
+	*/
+
+	const cookieHeader = request.headers.get('Cookie') || '';
+	const rootURL = new URL(request.url).origin;
+	let authenticated;
+	let userData = {};
+
+	const checkResult = await fetch(`${rootURL}/api/oauth/check`, {
+		headers: {
+			'Cookie': cookieHeader
+		}
+	});
+	if (checkResult.status === 200) authenticated = true;
+	else authenticated = false;
+
+	if (!authenticated) {
+		authenticated = false;
+	} else {
+		const refreshResult = await fetch(`${rootURL}/api/oauth/refresh`, {
+			headers: {
+				'Cookie': cookieHeader
+			}
+		});
+
+		authenticated = refreshResult.ok;
+		if (refreshResult.ok) {
+			const responseData = await refreshResult.json();
+			console.log(responseData);
+			userData = responseData;
+		}
+	}
+
+	return { authenticated, userData }
+}
+
+/*
+	Since our authentication is same-site, we used loaders to eliminate content flickers for the end user, but then the loader would rerun on every navigation,
+	which is redundant and rate limit–inducing behaviour. We disable revalidation for the root path unless a form action triggered it.
+*/
+export function shouldRevalidate({ currentUrl, nextUrl, formAction, defaultShouldRevalidate }) {
+	if (!formAction) return false;
+	return defaultShouldRevalidate;
+}
+
 export default function App({ loaderData }) {
 	useEffect(() => {
-		applyTheme('dark')
+		applyTheme('dark');
 	}, []);
 
 	return (
-		<AccountProvider>
+		<AccountContext.Provider value={{ isAuthenticated: loaderData.authenticated, userData: loaderData.userData }}>
 			<PackageProvider>
 				<AppNavBar />
 				<Outlet />
@@ -151,7 +229,7 @@ export default function App({ loaderData }) {
 					</div>
 				</footer>
 			</PackageProvider>
-		</AccountProvider>
+		</AccountContext.Provider>
 	);
 }
 

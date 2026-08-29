@@ -8,13 +8,18 @@
 	"compatibility_date": "2026-08-25",
 	"main": "./workers/app.js",
 	"vars": {
-		"GH_CLIENT_ID": "Ov23liUlQoxw0gHskiPS"
+		"GH_CLIENT_ID": "Ov23liAOiZByHzSB0O3Q"
 	},
 	"observability": {
 		"enabled": true
 	},
 	"upload_source_maps": true,
 	"compatibility_flags": ["nodejs_compat"],
+	"d1_databases": [{
+		"binding": "DB",
+		"database_name": "utile-os-smithy",
+		"database_id": "1431dbc6-8390-4f41-a479-53a77a438321"
+	}]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
