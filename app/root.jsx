@@ -9,12 +9,13 @@ import {
 } from "react-router";
 
 import './app.scss';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { applyTheme, CodeSnippet, Col, Navigation, Row } from '@canonical/react-components';
 import logo from './assets/SVGs/logo-transparent.svg'
 
 import { PackageProvider } from './contexts/PackageManagement';
 import Codeblock from './components/UI/Codeblock';
+import { AccountContext, AccountProvider } from './contexts/AccountManagement';
 
 /**
  * @type {import("react-router").LinksFunction}
@@ -72,66 +73,85 @@ export function Layout({ children }) {
 	);
 }
 
-export default function App({ loaderData }) {
+// Needs to be in a wrapper component to use the auth context
+function AppNavBar() {
 	const navigate = useNavigate();
+	const { isAuthenticated, userData } = useContext(AccountContext);
 
+	return (
+		<Navigation
+			items={[
+				{
+					label: 'Archives',
+					url: '/archives'
+				}, {
+					label: 'Maintainers',
+					url: '#'
+				}, {
+					label: 'User Support',
+					url: '#'
+				}, {
+					label: 'User Wiki',
+					url: '#'
+				}, {
+					label: 'Developer Docs',
+					url: '#'
+				}
+			]}
+			itemsRight={[{
+				alignRight: true,
+				label: userData.name || 'Log In',
+				[!isAuthenticated ? 'url' : null]: `https://github.com/login/oauth/authorize?scope=user:email+offline_access&client_id=${import.meta.env.VITE_APP_GH_CLIENT_ID}`,
+				[isAuthenticated ? 'items' : null]: [{
+					label: 'Account',
+					url: '/account'
+				}]
+			}]}
+			logo={<img style={{ cursor: 'pointer' }} onClick={() => navigate('/')} src={logo} height='32px' alt='Logo' loading='lazy' />}
+		/>
+	)
+}
+
+export default function App({ loaderData }) {
 	useEffect(() => {
 		applyTheme('dark')
 	}, []);
 
 	return (
-		<PackageProvider>
-			<Navigation
-				items={[
-					{
-						label: 'Archives',
-						url: '/archives'
-					}, {
-						label: 'Maintainers',
-						url: '#'
-					}, {
-						label: 'Bugs',
-						url: '#'
-					}, {
-						label: 'User Wiki',
-						url: '#'
-					}, {
-						label: 'Developer Docs',
-						url: '#'
-					}
-				]}
-				logo={<img style={{ cursor: 'pointer' }} onClick={() => navigate('/')} src={logo} height='32px' alt='Logo' loading='lazy' />}
-			/>
-			<Outlet />
-			<hr />
-			<footer className='l-footer--sticky p-strip'>
-				<div className='l-docs__subgrid'>
-					<div className='l-docs__sidebar u-fixed-width'>
-						<p>Licensed GPLv3</p>
+		<AccountProvider>
+			<PackageProvider>
+				<AppNavBar />
+				<Outlet />
+				<hr />
+				<footer className='l-footer--sticky p-strip'>
+					<div className='l-docs__subgrid'>
+						<div className='l-docs__sidebar u-fixed-width'>
+							<p>Licensed GPLv3</p>
+						</div>
+						<div className='l-docs__main'>
+							<Row>
+								<nav className='col-3' aria-label='Footer'>
+									<ul className='p-list'>
+										<li className='p-list__item'>
+											<a href='https://github.com/Proman4713/Utile-OS'>OS Build Repository</a>
+										</li>
+										<li className='p-list__item'>
+											<a href='https://github.com/Proman4713/Utile-OS-Debian'>Package Sources</a>
+										</li>
+										<li className='p-list__item'>
+											<a href='https://github.com/Proman4713/Utile-OS-Smithy'>Smithy Source</a>
+										</li>
+									</ul>
+								</nav>
+								<Col size={9}>
+									<p>Smithy is part of the <a href='https://utile-os-web.mailworker.workers.dev/about'>Utile OS project</a>, a minimum-friction Linux desktop. <a href='https://buymeacoffee.com/codeswallop'>Support it if you can</a>.</p>
+								</Col>
+							</Row>
+						</div>
 					</div>
-					<div className='l-docs__main'>
-						<Row>
-							<nav className='col-3' aria-label='Footer'>
-								<ul className='p-list'>
-									<li className='p-list__item'>
-										<a href='https://github.com/Proman4713/Utile-OS'>OS Build Repository</a>
-									</li>
-									<li className='p-list__item'>
-										<a href='https://github.com/Proman4713/Utile-OS-Debian'>Package Sources</a>
-									</li>
-									<li className='p-list__item'>
-										<a href='https://github.com/Proman4713/Utile-OS-Smithy'>Smithy Source</a>
-									</li>
-								</ul>
-							</nav>
-							<Col size={9}>
-								<p>Smithy is part of the <a href='https://utile-os-web.mailworker.workers.dev/about'>Utile OS project</a>, a minimum-friction Linux desktop. <a href='https://buymeacoffee.com/codeswallop'>Support it if you can</a>.</p>
-							</Col>
-						</Row>
-					</div>
-				</div>
-			</footer>
-		</PackageProvider>
+				</footer>
+			</PackageProvider>
+		</AccountProvider>
 	);
 }
 
