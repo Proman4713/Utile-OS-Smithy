@@ -28,13 +28,14 @@ export default createRouteDefinition(
 
 		// TODO: Make this work with multiple OAuth providers, we should probably have a cookie independent of GitHub
 		const userAccessToken = getCookie(request.headers.get('cookie'), 'access_token');
+		// If there's no access token, they should still be able to view profiles; areSameUser would never be true
 		if (userAccessToken) {
 			const userOctokit = DBProvider.initUserOctokit(userAccessToken);
 
-			const userData = await userOctokit.request('GET /user');
-			if (userData.status === 200) {
+			const userGHData = await userOctokit.request('GET /user');
+			if (userGHData.status === 200) {
 				/*
-					TODO: We could just compare userData.data.id and requestedDatabaseUser.github_id, but we 're making the additional request to have this ready
+					TODO: We could just compare userGHData.data.id and requestedDatabaseUser.github_id, but we 're making the additional request to have this ready
 					TODO:	for porting to multiple OAuth providers at one point
 				*/
 
@@ -42,8 +43,8 @@ export default createRouteDefinition(
 				 * @type {DBUser}
 				 */
 				const databaseUser = await DBProvider.DB
-					.prepare('SELECT * FROM users WHERE github_id = ?')
-					.bind(userData.data.id)
+					.prepare('SELECT id FROM users WHERE github_id = ?')
+					.bind(userGHData.data.id)
 					.first();
 				
 				if (databaseUser.id === requestedDatabaseUser.id) {

@@ -1,7 +1,7 @@
-import { useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useMemo, useState } from 'react';
 import { AccountContext } from '../../contexts/AccountManagement';
 import { data } from 'react-router';
-import { Chip, Col, ICONS, List, Row, Switch, Textarea } from '@canonical/react-components';
+import { Chip, Col, ICONS, List, Row, Switch, Textarea, useNotify } from '@canonical/react-components';
 import { faQuestion } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -43,10 +43,26 @@ export default function Account({ params, loaderData }) {
 		TODO:	at one point that doesn't require copy-pasting (even if I wanted to use TypeScript, could I use types declared outside of app/ without
 		TODO:	issues?)
 	*/ 
-	const requestedUserData = loaderData;
+	const [requestedUserData, setRequestedUserData] = useState(loaderData);
 
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [temporaryDescription, setTemporaryDescription] = useState(requestedUserData.description || '');
+	const notify = useNotify();
+
+	const updateDescription = useCallback(async () => {
+		const response = await fetch('/api/profiles/update-description', {
+			body: temporaryDescription,
+			method: 'POST'
+		});
+
+		if (!response.ok) {
+			notify.failure(`Failed to update description`, await response.text());
+			return;
+		}
+
+		setRequestedUserData(await response.json());
+		setIsEditingDescription(false);
+	}, [notify, temporaryDescription]);
 
 	return (
 		<>
@@ -73,7 +89,7 @@ export default function Account({ params, loaderData }) {
 									onClick={() => {
 										if (isEditingDescription) {
 											setIsEditingDescription(false);
-											setTemporaryDescription('');
+											setTemporaryDescription(requestedUserData.description || '');
 											return;
 										}
 										setIsEditingDescription(true);
@@ -85,21 +101,20 @@ export default function Account({ params, loaderData }) {
 								&& <Chip
 									value={'Update'}
 									iconName={ICONS.success}
-									onClick={() => {
-										
-									}}
+									onClick={updateDescription}
 									appearance='positive'
+									disabled={temporaryDescription === requestedUserData.description}
 								/>}
 							</div>
 
 							<div>
-								{!isEditingDescription || !isMe // Added for preview mode while editing
+								{(!isEditingDescription || !isMe) // Added for preview mode while editing
 								&& <p style={{ whiteSpace: 'preserve' }}>
 									{requestedUserData.description || 'No description.'}
 								</p>}
 
 								{/* Only if it's us and we're editing */}
-								{isMe && isEditingDescription
+								{(isMe && isEditingDescription)
 								&& <Textarea style={{ minHeight: 100, maxHeight: 200, resize: 'vertical' }}
 									value={temporaryDescription}
 									onChange={e => setTemporaryDescription(e.target.value)}

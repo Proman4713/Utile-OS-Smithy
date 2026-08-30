@@ -13,7 +13,7 @@ import {
 
 import './app.scss';
 import { useContext, useEffect, useState } from 'react';
-import { applyTheme, CodeSnippet, Col, Navigation, Row } from '@canonical/react-components';
+import { applyTheme, Col, Navigation, NotificationConsumer, NotificationProvider, Row } from '@canonical/react-components';
 import logo from './assets/SVGs/logo-transparent.svg'
 
 import { PackageProvider } from './contexts/PackageManagement';
@@ -234,38 +234,43 @@ export default function App({ loaderData }) {
 	return (
 		// in case the loader never returns something due to refresh failure
 		<AccountContext.Provider value={{ isAuthenticated: loaderData.authenticated || false, userData: loaderData.userData || {} }}>
-			<PackageProvider>
-				<AppNavBar />
-				<Outlet />
-				<hr />
-				<footer className='l-footer--sticky p-strip'>
-					<div className='l-docs__subgrid'>
-						<div className='l-docs__sidebar u-fixed-width'>
-							<p>Licensed GPLv3</p>
-						</div>
-						<div className='l-docs__main'>
-							<Row>
-								<nav className='col-3' aria-label='Footer'>
-									<ul className='p-list'>
-										<li className='p-list__item'>
-											<a href='https://github.com/Proman4713/Utile-OS'>OS Build Repository</a>
-										</li>
-										<li className='p-list__item'>
-											<a href='https://github.com/Proman4713/Utile-OS-Debian'>Package Sources</a>
-										</li>
-										<li className='p-list__item'>
-											<a href='https://github.com/Proman4713/Utile-OS-Smithy'>Smithy Source</a>
-										</li>
-									</ul>
-								</nav>
-								<Col size={9}>
-									<p>Smithy is part of the <a href='https://utile-os-web.mailworker.workers.dev/about'>Utile OS project</a>, a minimum-friction Linux desktop. <a href='https://buymeacoffee.com/codeswallop'>Support it if you can</a>.</p>
-								</Col>
-							</Row>
-						</div>
+			<NotificationProvider>
+				<PackageProvider>
+					<div style={{ position: 'absolute', width: '90%', left: '5%', top: '6%', zIndex: 99999 }}>
+						<NotificationConsumer />
 					</div>
-				</footer>
-			</PackageProvider>
+					<AppNavBar />
+					<Outlet />
+					<hr />
+					<footer className='l-footer--sticky p-strip'>
+						<div className='l-docs__subgrid'>
+							<div className='l-docs__sidebar u-fixed-width'>
+								<p>Licensed GPLv3</p>
+							</div>
+							<div className='l-docs__main'>
+								<Row>
+									<nav className='col-3' aria-label='Footer'>
+										<ul className='p-list'>
+											<li className='p-list__item'>
+												<a href='https://github.com/Proman4713/Utile-OS'>OS Build Repository</a>
+											</li>
+											<li className='p-list__item'>
+												<a href='https://github.com/Proman4713/Utile-OS-Debian'>Package Sources</a>
+											</li>
+											<li className='p-list__item'>
+												<a href='https://github.com/Proman4713/Utile-OS-Smithy'>Smithy Source</a>
+											</li>
+										</ul>
+									</nav>
+									<Col size={9}>
+										<p>Smithy is part of the <a href='https://utile-os-web.mailworker.workers.dev/about'>Utile OS project</a>, a minimum-friction Linux desktop. <a href='https://buymeacoffee.com/codeswallop'>Support it if you can</a>.</p>
+									</Col>
+								</Row>
+							</div>
+						</div>
+					</footer>
+				</PackageProvider>
+			</NotificationProvider>
 		</AccountContext.Provider>
 	);
 }
