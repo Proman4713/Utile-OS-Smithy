@@ -92,7 +92,7 @@ export default function Account({ params, loaderData }) {
 							</div>
 
 							<div>
-								{!isEditingDescription
+								{!isEditingDescription || !isMe // Added for preview mode while editing
 								&& <p style={{ whiteSpace: 'preserve' }}>
 									{requestedUserData.description || 'No description.'}
 								</p>}
