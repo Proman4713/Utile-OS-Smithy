@@ -151,48 +151,70 @@ export async function loader({ request }) {
 
 	const cookieHeader = request.headers.get('Cookie') || '';
 	const rootURL = new URL(request.url).origin;
-	let authenticated;
 	let userData;
 
-	console.log('Checking auth and refreshing', rootURL)
+	const responseHeaders = new Headers();
+	/**
+	 * To make the cookie wipes/updates work
+	 * @param {Response} response 
+	 */
+	const appendCookies = (response) => {
+		// getSetCookie() returns string[] for multiple cookies safely
+		const cookies = response.headers.getSetCookie ? response.headers.getSetCookie() : [];
+
+		for (const cookie of cookies) {
+			responseHeaders.append('Set-Cookie', cookie);
+		}
+	};
+
+	console.log('Checking auth and refreshing', rootURL);
 	const checkResult = await fetch(`${rootURL}/api/oauth/check`, {
 		headers: {
 			'Cookie': cookieHeader
 		}
 	});
-	if (checkResult.status === 200) authenticated = true;
-	else authenticated = false;
+	appendCookies(checkResult);
 
-	console.log(`/api/oauth/check`, checkResult.status, checkResult.statusText, await checkResult.text())
+	console.log(`/api/oauth/check`, checkResult.status, checkResult.statusText, await checkResult.text());
 
-	if (!authenticated) {
-		return;
-	} else {
-		const refreshResult = await fetch(`${rootURL}/api/oauth/refresh`, {
-			headers: {
-				'Cookie': cookieHeader
-			}
+	if (checkResult.status !== 200) {
+		return data({
+			authenticated: false,
+			userData: null
+		}, {
+			headers: responseHeaders
 		});
-		console.log(`/api/oauth/refresh`, refreshResult.status)
-		
-		authenticated = refreshResult.ok;
-		if (refreshResult.ok) {
-			const responseData = await refreshResult.json();
-			console.log(`refresh result`, responseData)
-			console.log(responseData);
-			userData = responseData;
-		} else {
-			// Make the cookie headers work
-			const forwardedCookies = refreshResult.headers.get('Set-Cookie');
-
-			console.log(`Returning failed refresh`)
-			return data(await refreshResult.text(), {
-				headers: forwardedCookies ? { 'Set-Cookie': forwardedCookies } : {}
-			})
-		}
 	}
 
-	return { authenticated, userData }
+	const refreshResult = await fetch(`${rootURL}/api/oauth/refresh`, {
+		headers: {
+			'Cookie': cookieHeader
+		}
+	});
+	appendCookies(refreshResult);
+	console.log(`/api/oauth/refresh`, refreshResult.status);
+
+	if (!refreshResult.ok) {
+		console.log(`Returning failed refresh`);
+
+		return data({
+			authenticated: false,
+			error: await refreshResult.text()
+		}, {
+			headers: responseHeaders,
+			status: refreshResult.status
+		});
+	}
+
+	userData = await refreshResult.json();
+	console.log(`refresh result`, userData);
+
+	return data({
+		authenticated: true,
+		userData
+	}, {
+		headers: responseHeaders
+	});
 }
 
 /*
