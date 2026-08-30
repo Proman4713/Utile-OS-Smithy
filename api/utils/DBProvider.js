@@ -1,4 +1,3 @@
-import { D1Database } from '@cloudflare/workers-types';
 import { createOAuthAppAuth } from '@octokit/auth-oauth-app';
 import { Octokit } from "octokit";
 
@@ -39,7 +38,7 @@ export default class DBProvider {
 	static #SCOPES = ['user:email'];
 
 	/**
-	 * @type {D1Database}
+	 * @type {import('@cloudflare/workers-types').D1Database}
 	 */
 	static get DB() {
 		return DBProvider.#DB;
@@ -93,7 +92,7 @@ export default class DBProvider {
 
 	/**
 	 * 
-	 * @param {D1Database} DB 
+	 * @param {import('@cloudflare/workers-types').D1Database} DB 
 	 */
 	static init(DB) {
 		DBProvider.#DB = DB;

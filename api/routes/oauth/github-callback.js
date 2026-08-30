@@ -5,6 +5,7 @@ export default createRouteDefinition(
 	async (request, path, ghClientSecret, ghClientId) => {
 		const sessionCode = new URL(request.url).searchParams.get('code');
 
+		//dbg console.log(ghClientId, ghClientSecret)
 		const result = await fetch('https://github.com/login/oauth/access_token', {
 			headers: {
 				'Accept': 'application/json',

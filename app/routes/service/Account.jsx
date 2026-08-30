@@ -131,7 +131,7 @@ export default function Account({ params, loaderData }) {
 								<>
 									<p style={{ margin: 0 }}>Connections:</p>
 									<List
-										items={requestedUserData.connections.map((connection, i) => {
+										items={(isMe ? requestedUserData.connections : requestedUserData.publicConnections).map((connection, i) => {
 											let icon = faQuestion;
 											let url = null;
 

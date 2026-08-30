@@ -3,7 +3,6 @@ import {
 } from 'react-router';
 import { CommonData } from '../api/utils/common';
 import DBProvider from '../api/utils/DBProvider';
-import { D1Database } from '@cloudflare/workers-types';
 
 const requestHandler = createRequestHandler(
 	() => import('virtual:react-router/server-build'),
@@ -36,7 +35,7 @@ const modules = import.meta.glob("../api/routes/**/*.js");
 /** 
  *
  * @param {Request} request - the incoming request object
- * @param {{ GH_CLIENT_ID: string, GH_CLIENT_SECRET: string, DB: D1Database }} env 
+ * @param {{ GH_CLIENT_ID: string, GH_CLIENT_SECRET: string, DB: import('@cloudflare/workers-types').D1Database }} env 
  * @return {Promise<Response>} the response object containing the result of the database operation or an error message
  */
 async function runWorker(request, env) {

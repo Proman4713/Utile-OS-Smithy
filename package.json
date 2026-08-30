@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "start": "react-router dev --open",
-    "build": "react-router build",
+    "build": "react-router build && node -e \"require('fs').rmSync('build/server/.dev.vars', { force: true })\"",
     "dev": "react-router dev",
     "deploy": "pnpm build && wrangler deploy",
     "preview": "pnpm build && vite preview"

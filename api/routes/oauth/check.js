@@ -6,6 +6,7 @@ export default createRouteDefinition(
 	async (request, path, ghClientSecret, ghClientId) => {
 		const cookieHeader = request.headers.get('Cookie') || '';
 
+		//dbg console.log(ghClientSecret, ghClientId)
 		const accessToken = getCookie(cookieHeader, 'access_token');
 		if (accessToken) {
 			return new Response('Authenticated', {

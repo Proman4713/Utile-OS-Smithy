@@ -153,6 +153,7 @@ export async function loader({ request }) {
 	let authenticated;
 	let userData = {};
 
+	console.log('Checking auth and refreshing', rootURL)
 	const checkResult = await fetch(`${rootURL}/api/oauth/check`, {
 		headers: {
 			'Cookie': cookieHeader
@@ -160,6 +161,8 @@ export async function loader({ request }) {
 	});
 	if (checkResult.status === 200) authenticated = true;
 	else authenticated = false;
+
+	console.log(`/api/oauth/check`, checkResult.status, checkResult.statusText, await checkResult.text())
 
 	if (!authenticated) {
 		authenticated = false;
@@ -169,10 +172,12 @@ export async function loader({ request }) {
 				'Cookie': cookieHeader
 			}
 		});
-
+		console.log(`/api/oauth/refresh`, refreshResult.status)
+		
 		authenticated = refreshResult.ok;
 		if (refreshResult.ok) {
 			const responseData = await refreshResult.json();
+			console.log(`refresh result`, responseData)
 			console.log(responseData);
 			userData = responseData;
 		}
