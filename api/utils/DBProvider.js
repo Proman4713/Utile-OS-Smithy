@@ -6,9 +6,10 @@ import { Octokit } from "octokit";
  * @typedef {{
  * username: string,
  * displayName: string,
+ * description: string?,
  * id: Number,
- * connections: ('github')[],
- * publicConnections: ('github')[],
+ * connections: ({ type: 'github', displayName: string })[],
+ * publicConnections: ({ type: 'github', displayName: string })[],
  * email: string?,
  * creationDate: string
  * }} User
@@ -24,6 +25,7 @@ export const User = {};
  * is_gh_connection_public: 0 | 1,
  * username: string,
  * display_name: string,
+ * description: string?,
  * email: string?,
  * creation_date: string
  * }} DBUser
@@ -74,16 +76,17 @@ export default class DBProvider {
 		console.log('Parsing', databaseRow)
 		// Connections, for when we allow more than one
 		userData.connections = []
-		if (databaseRow.github_id) userData.connections.push('github');
+		if (databaseRow.github_id) userData.connections.push({ type: 'github', displayName: databaseRow.github_name });
 
 		userData.creationDate = databaseRow.creation_date;
 		userData.username = databaseRow.username;
 		userData.displayName = databaseRow.display_name;
+		userData.description = databaseRow.description;
 		userData.email = databaseRow.email;
 		userData.id = databaseRow.id;
 
 		userData.publicConnections = [];
-		if (databaseRow.is_gh_connection_public) userData.publicConnections.push('github');
+		if (databaseRow.is_gh_connection_public) userData.publicConnections.push({ type: 'github', displayName: databaseRow.github_name });
 
 		return userData;
 	}

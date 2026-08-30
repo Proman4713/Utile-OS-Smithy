@@ -6,5 +6,6 @@ import { index, route } from "@react-router/dev/routes";
 export default [
 	index('routes/static/Home.jsx'),
 	route('/archives', 'routes/archives/Index.jsx'),
-	route('/archives/:suite/:component/:name', 'routes/archives/Package.jsx')
+	route('/archives/:suite/:component/:name', 'routes/archives/Package.jsx'),
+	route('/account/:username/', 'routes/service/Account.jsx'),
 ];
