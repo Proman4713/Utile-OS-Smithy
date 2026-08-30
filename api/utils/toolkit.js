@@ -97,6 +97,7 @@ export const userOctokitWithRetry = async (route, octokitInstance = { octokit: n
 }
 
 export const refreshAccessToken = async (ghClientSecret, ghClientId, refreshToken) => {
+	console.log('Refreshing user token', refreshToken);
 	const result = await fetch('https://github.com/login/oauth/access_token', {
 		headers: {
 			'Accept': 'application/json',
@@ -110,8 +111,10 @@ export const refreshAccessToken = async (ghClientSecret, ghClientId, refreshToke
 		}),
 		method: 'POST'
 	});
+	console.log('Refresh result', result.status, result.statusText);
 
 	const parsedResult = await result.json();
+	console.log('Refresh JSON result', parsedResult);
 	const newAccessToken = parsedResult.access_token;
 
 	if (!newAccessToken) return false;

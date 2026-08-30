@@ -26,14 +26,17 @@ export default createRouteDefinition(
 		failedResponseHeaders.append('Set-Cookie', `access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0;`);
 		failedResponseHeaders.append('Set-Cookie', `refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Max-Age=0;`);
 
+		console.log('Attempting to get user data');
 		let authResult;
 		try {
 			authResult = await userOctokitWithRetry('GET /user', {
 				octokit: DBProvider.initUserOctokit(accessToken)
 			}, 2, async (octokitInstance) => {
+				console.log('Getting user data failed, refreshing token');
 				const refreshRequest = await refreshAccessToken(ghClientSecret, ghClientId, refreshToken);
 
 				if (refreshRequest) {
+					console.log('Creating new octokit instance after refreshing:', refreshRequest.accessToken);
 					// Objects are passed by reference, so we should be able to directly modify it for the fetch function; however, this is difficult to test
 					octokitInstance.octokit = DBProvider.initUserOctokit(refreshRequest.accessToken);
 					accessToken = refreshRequest.accessToken;
@@ -48,7 +51,7 @@ export default createRouteDefinition(
 				return false;
 			});
 		} catch (e) {
-			//dbg console.log(e);
+			console.log('Refresh failed, clearing cookies', e);
 			return new Response(`Unauthenticated: ${e}`, {
 				headers: failedResponseHeaders,
 				status: 401

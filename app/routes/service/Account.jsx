@@ -56,13 +56,14 @@ export default function Account({ params, loaderData }) {
 						<div className='p-section--shallow'>
 							<div className='flex-row justify-space-between'>
 								<h1>
-									{requestedUserData.displayName}
+									{requestedUserData.displayName} (ID: {requestedUserData.id})
 								</h1>
-								<Switch
+								{isMe || isPreview // Only show it when we're the user, but also if we're in preview so it isn't hidden
+								&& <Switch
 									label={isPreview ? 'Public View' : 'Normal View'}
 									checked={isPreview}
 									onChange={e => setIsPreview(e.target.checked)}
-								/>
+								/>}
 							</div>
 							<div className='flex-row'>
 								{isMe

@@ -1,11 +1,13 @@
 import { CommonData } from '../../utils/common';
 import createRouteDefinition from '../../utils/createRouteDefinition';
+import DBProvider from '../../utils/DBProvider';
 
 export default createRouteDefinition(
 	async (request, path, ghClientSecret, ghClientId) => {
 		const sessionCode = new URL(request.url).searchParams.get('code');
 
 		//dbg console.log(ghClientId, ghClientSecret)
+		// TODO: Figure out how on earth this is supposed to be done with our Octokit instance (my luck with documentation will never be matched)
 		const result = await fetch('https://github.com/login/oauth/access_token', {
 			headers: {
 				'Accept': 'application/json',

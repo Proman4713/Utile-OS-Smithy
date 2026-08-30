@@ -1,4 +1,5 @@
 import {
+	data,
 	isRouteErrorResponse,
 	Link,
 	Links,
@@ -151,7 +152,7 @@ export async function loader({ request }) {
 	const cookieHeader = request.headers.get('Cookie') || '';
 	const rootURL = new URL(request.url).origin;
 	let authenticated;
-	let userData = {};
+	let userData;
 
 	console.log('Checking auth and refreshing', rootURL)
 	const checkResult = await fetch(`${rootURL}/api/oauth/check`, {
@@ -165,7 +166,7 @@ export async function loader({ request }) {
 	console.log(`/api/oauth/check`, checkResult.status, checkResult.statusText, await checkResult.text())
 
 	if (!authenticated) {
-		authenticated = false;
+		return;
 	} else {
 		const refreshResult = await fetch(`${rootURL}/api/oauth/refresh`, {
 			headers: {
@@ -180,6 +181,14 @@ export async function loader({ request }) {
 			console.log(`refresh result`, responseData)
 			console.log(responseData);
 			userData = responseData;
+		} else {
+			// Make the cookie headers work
+			const forwardedCookies = refreshResult.headers.get('Set-Cookie');
+
+			console.log(`Returning failed refresh`)
+			return data(await refreshResult.text(), {
+				headers: forwardedCookies ? { 'Set-Cookie': forwardedCookies } : {}
+			})
 		}
 	}
 
@@ -201,7 +210,8 @@ export default function App({ loaderData }) {
 	}, []);
 
 	return (
-		<AccountContext.Provider value={{ isAuthenticated: loaderData.authenticated, userData: loaderData.userData }}>
+		// in case the loader never returns something due to refresh failure
+		<AccountContext.Provider value={{ isAuthenticated: loaderData.authenticated || false, userData: loaderData.userData || {} }}>
 			<PackageProvider>
 				<AppNavBar />
 				<Outlet />
