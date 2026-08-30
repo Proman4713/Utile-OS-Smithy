@@ -70,19 +70,17 @@ export default function Index({ loaderData }) {
 	}, [filteredComponents, filteredSuites]);
 
 	//^ Searching
-	const packageFuse = useMemo(() => new Fuse(loaderData.packages, { keys: ['name'], includeScore: true }), [loaderData]);
+	const packageFuse = useMemo(() => new Fuse(loaderData.packages, { keys: ['name'], includeScore: true, includeMatches: true }), [loaderData]);
 	const searchResults = useMemo(() => {
 		const query = searchParams.get('q');
 		if (query) {
-			const exactPackageMatches = loaderData.packages.filter(pkg => pkg.name === query);
-			if (exactPackageMatches.length) return exactPackageMatches;
-
-			const packageMatches = packageFuse.search(query).sort((a, b) => a.score - b.score).map(r => r.item);
+			const packageMatches = packageFuse.search(query)
+				.map(r => r.item);
 
 			return packageMatches;
 		}
 		return [];
-	}, [loaderData.packages, packageFuse, searchParams]);
+	}, [packageFuse, searchParams]);
 	const isSearchActive = !!searchParams.get('q');
 
 	return (
@@ -164,10 +162,9 @@ export default function Index({ loaderData }) {
 					</Col>
 				</Row>
 				<Row>
-					{loaderData.packages
+					{(isSearchActive ? searchResults : loaderData.packages)
 						.filter(pkg => filteredSuites.some(k => k.value === pkg.suite))
 						.filter(pkg => filteredComponents.some(k => k.value === pkg.component))
-						.filter(pkg => !isSearchActive || searchResults.some(resultPkg => resultPkg.name === pkg.name)) // Don't filter if search isn't active
 						.map((pkg, i) => (
 							<Card
 								key={i}
