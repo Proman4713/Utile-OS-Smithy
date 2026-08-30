@@ -65,6 +65,11 @@ export default function Package({ loaderData }) {
 
 	return (
 		<>
+			<meta property="og:title" content={name} />
+			<meta property="twitter:title" content={name} />
+			<meta property="og:description" content={description} />
+			<meta name="description" content={description} />
+
 			<div className='p-section--hero'>
 				<div className='row--25-75'>
 					<div className='col'>

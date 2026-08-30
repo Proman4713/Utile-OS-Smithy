@@ -5,6 +5,7 @@ import { Chip, Col, ICONS, List, Row, Switch, Textarea, useNotify } from '@canon
 import { faQuestion } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import truncateText from '../../utils/truncateText';
 
 /**
  * @type {import('react-router').MetaFunction}
@@ -66,6 +67,11 @@ export default function Account({ params, loaderData }) {
 
 	return (
 		<>
+			<meta property="og:title" content={requestedUserData.displayName} />
+			<meta property="twitter:title" content={requestedUserData.displayName} />
+			<meta property="og:description" content={truncateText(requestedUserData.description, 100) || 'No description.'} />
+			<meta name="description" content={truncateText(requestedUserData.description, 100) || 'No description.'} />
+
 			<div className='p-section--hero'>
 				<div className='row--25-75'>
 					<div className='col'>

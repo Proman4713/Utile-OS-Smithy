@@ -11,6 +11,11 @@ export const meta = () => [
 export default function Home() {
 	return (
 		<>
+			<meta property="og:title" content="Homepage" />
+			<meta property="twitter:title" content="Homepage" />
+			<meta property="og:description" content="Utile OS's package archive management service." />
+			<meta name="description" content="Utile OS's package archive management service." />
+
 			<div className='p-section--hero'>
 				<div className='row--25-75'>
 					<div className='col'>

@@ -48,11 +48,11 @@ export function Layout({ children }) {
 				{/* Embed Data */}
 					{/* Twitter, not X */}
 					<meta content="summary" property="twitter:card" />
-					<meta content="The Utile OS Smithy" property="twitter:title" />
+					{/* twitter:title provided per route */}
 					<meta content="/logo_original.png" property="twitter:image" />
 
 					{/* Open Graph */}
-					<meta content="The Utile OS Smithy" property="og:site_name" />
+					<meta content="Smithy — Utile OS" property="og:site_name" />
 
 					<meta content="/logo_original.png" property="og:image" />
 					<meta name="theme-color" content="#1A5E63" />

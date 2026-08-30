@@ -85,6 +85,11 @@ export default function Index({ loaderData }) {
 
 	return (
 		<>
+			<meta property="og:title" content="Archives — Smithy" />
+			<meta property="twitter:title" content="Archives — Smithy" />
+			<meta property="og:description" content={`All ${loaderData.packages.length} packages made for the minimum-friction Linux desktop`} />
+			<meta name="description" content={`All ${loaderData.packages.length} packages made for the minimum-friction Linux desktop`} />
+
 			<div className='p-section--hero'>
 				<div className='row--25-75'>
 					<div className='col'>
