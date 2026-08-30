@@ -58,7 +58,7 @@ export default function Account({ params, loaderData }) {
 								<h1>
 									{requestedUserData.displayName} (ID: {requestedUserData.id})
 								</h1>
-								{isMe || isPreview // Only show it when we're the user, but also if we're in preview so it isn't hidden
+								{(isMe || isPreview) // Only show it when we're the user, but also if we're in preview so it isn't hidden
 								&& <Switch
 									label={isPreview ? 'Public View' : 'Normal View'}
 									checked={isPreview}
