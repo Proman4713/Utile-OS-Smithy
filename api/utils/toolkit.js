@@ -2,7 +2,7 @@ import { Octokit } from 'octokit';
 import DBProvider from './DBProvider';
 
 export const getCookie = (header='', name='') => {
-	const match = header.match(new RegExp(`(^|;\\s*)${name}=([^;]*)`));
+	const match = header?.match(new RegExp(`(^|;\\s*)${name}=([^;]*)`));
 	return match ? decodeURIComponent(match[2]) : null;
 };
 
