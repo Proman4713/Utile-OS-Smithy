@@ -7,6 +7,12 @@ export default createRouteDefinition(
 	async (request, path) => {
 		const newFingerprint = await request.text();
 
+		// TODO: Implement a key verification method to avoid attackers locking a legitimate person out of using their key.
+		return new Response('Under Maintenance', {
+			headers: CommonData.CORS_HEADERS,
+			status: 503
+		});
+
 		// Check that key exists
 		const keyserverResult = await fetch(`https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0x${newFingerprint.toLowerCase()}`);
 		if (!keyserverResult.ok) {
