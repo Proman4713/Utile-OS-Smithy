@@ -124,10 +124,15 @@ export default createRouteDefinition(
 					...(authResult.data.email ? [authResult.data.email] : [])
 				)
 				.first();
-			userData = DBProvider.parseAppUserFromDBUser(createdUser);
+			userData = DBProvider.parseAppUserFromDBUser(createdUser, []); // Just created, no GPG keys
 		} else {
+			const { results: requestedDatabaseUserGPGKeys } = await DBProvider.DB
+						.prepare('SELECT openpgp_fingerprint FROM gpg_keys WHERE user_id = ? AND status = "valid"')
+						.bind(results[0].id)
+						.run();
+
 			// github_id is a UNIQUE column, so there will only be one result anyway
-			userData = DBProvider.parseAppUserFromDBUser(results[0]);
+			userData = DBProvider.parseAppUserFromDBUser(results[0], requestedDatabaseUserGPGKeys);
 
 			// Update database name to match if the user changed their username
 			if (results[0].github_name !== authResult.data.name) {

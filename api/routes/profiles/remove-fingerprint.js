@@ -5,9 +5,9 @@ import { getCookie } from '../../utils/toolkit';
 
 export default createRouteDefinition(
 	async (request, path) => {
-		const newDescription = await request.text();
+		const fingerprintToRemove = await request.text();
 
-		// TODO: Adapt to multiple OAuth providers
+		// TODO: Adapt to multiple OAuth providers and abstract away this code
 		const userAccessToken = getCookie(request.headers.get('cookie'), 'access_token');
 		if (!userAccessToken) {
 			// The worst thing about standard HTTP responses is that I have to remember to use American spelling
@@ -29,23 +29,28 @@ export default createRouteDefinition(
 			})
 		}
 
-
 		/**
 		 * @type {DBUser}
 		 */
-		const updatedDatabaseUser = await DBProvider.DB
-			.prepare('UPDATE users SET description = ? WHERE github_id = ? RETURNING *')
-			.bind(newDescription, userGHId)
+		const databaseUser = await DBProvider.DB
+			.prepare('SELECT * FROM users WHERE github_id = ?')
+			.bind(userGHId)
 			.first();
-		
-		const { results: updatedDatabaseUserGPGKeys} = await DBProvider.DB
-			.prepare('SELECT openpgp_fingerprint FROM gpg_keys WHERE user_id = ? AND status = "valid"')
-			.bind(updatedDatabaseUser.id)
+
+		// Although each fingerprint is unique, we don't trust if someone won't sent a deletion request for a key other than theirs
+		const  {meta } = await DBProvider.DB
+			.prepare(`UPDATE gpg_keys SET status = "revoked", revocation_date = "${new Date().toISOString()}" WHERE user_id = ? AND openpgp_fingerprint = ?`)
+			.bind(databaseUser.id, fingerprintToRemove.toUpperCase())
 			.run();
 
-		const updatedUser = DBProvider.parseAppUserFromDBUser(updatedDatabaseUser, updatedDatabaseUserGPGKeys);
+		if (meta.changes === 0) {
+			return new Response('OpenPGP key not found.', {
+				headers: CommonData.CORS_HEADERS,
+				status: 404
+			});
+		}
 
-		return new Response(JSON.stringify(updatedUser), {
+		return new Response('OpenPGP key removed.', {
 			headers: CommonData.CORS_HEADERS,
 			status: 200
 		});

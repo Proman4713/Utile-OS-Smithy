@@ -96,3 +96,4 @@ CREATE INDEX idx_spb_acceptor_id ON source_package_builds(acceptor_id);
 ALTER TABLE source_package_uploads ADD COLUMN suite TEXT NOT NULL;
 ALTER TABLE source_package_uploads ADD COLUMN section TEXT NOT NULL;
 ALTER TABLE source_packages DROP COLUMN current_deb_control; -- The archives already give us all the information we currently need
+ALTER TABLE gpg_keys ADD COLUMN revocation_date TEXT;

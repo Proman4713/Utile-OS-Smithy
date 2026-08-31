@@ -6,11 +6,13 @@ import { Octokit } from "octokit";
  * username: string,
  * displayName: string,
  * description: string?,
- * id: Number,
+ * id: number,
+ * role: 'spectator' | 'maintainer' | 'reviewer' | 'admin',
  * connections: ({ type: 'github', displayName: string })[],
  * publicConnections: ({ type: 'github', displayName: string })[],
  * email: string?,
- * creationDate: string
+ * creationDate: string,
+ * gpgKeys: string[]
  * }} User
  * @type {User}
  */
@@ -18,7 +20,8 @@ export const User = {};
 
 /**
  * @typedef {{
- * id: Number,
+ * id: number,
+ * role: 'spectator' | 'maintainer' | 'reviewer' | 'admin',
  * github_name: string?,
  * github_id: Number?,
  * is_gh_connection_public: 0 | 1,
@@ -31,6 +34,18 @@ export const User = {};
  * @type {DBUser}
  */
 export const DBUser = {};
+
+/**
+ * @typedef {{
+ * id: number,
+ * user_id: number,
+ * openpgp_fingerprint: string,
+ * status: 'valid' | 'revoked',
+ * creation_date: string
+ * }} DBGPGKey
+ * @type {DBGPGKey}
+ */
+export const DBGPGKey = {};
 
 export default class DBProvider {
 	static #DB;
@@ -65,8 +80,9 @@ export default class DBProvider {
 
 	/**
 	 * @param {DBUser} databaseRow 
+	 * @param {DBGPGKey[]} gpgKeyRows 
 	 */
-	static parseAppUserFromDBUser(databaseRow) {
+	static parseAppUserFromDBUser(databaseRow, gpgKeyRows) {
 		/**
 		 * @type {User}
 		 */
@@ -83,9 +99,15 @@ export default class DBProvider {
 		userData.description = databaseRow.description;
 		userData.email = databaseRow.email;
 		userData.id = databaseRow.id;
+		userData.role = databaseRow.role;
 
 		userData.publicConnections = [];
 		if (databaseRow.is_gh_connection_public) userData.publicConnections.push({ type: 'github', displayName: databaseRow.github_name });
+
+		userData.gpgKeys = [];
+		for (const gpgKey of gpgKeyRows) {
+			userData.gpgKeys.push(gpgKey.openpgp_fingerprint);
+		}
 
 		return userData;
 	}

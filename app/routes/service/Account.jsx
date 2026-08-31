@@ -1,11 +1,12 @@
-import { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { AccountContext } from '../../contexts/AccountManagement';
 import { data } from 'react-router';
-import { Chip, Col, ICONS, List, Row, Switch, Textarea, useNotify } from '@canonical/react-components';
+import { Button, Chip, Col, Form, Icon, ICONS, Input, List, Modal, Row, Switch, Textarea, useNotify } from '@canonical/react-components';
 import { faQuestion } from '@fortawesome/free-solid-svg-icons';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import truncateText from '../../utils/truncateText';
+import { faPencil } from '@fortawesome/free-solid-svg-icons';
 
 /**
  * @type {import('react-router').MetaFunction}
@@ -45,10 +46,11 @@ export default function Account({ params, loaderData }) {
 		TODO:	issues?)
 	*/ 
 	const [requestedUserData, setRequestedUserData] = useState(loaderData);
+	const notify = useNotify();
 
+	//^ Description Editing
 	const [isEditingDescription, setIsEditingDescription] = useState(false);
 	const [temporaryDescription, setTemporaryDescription] = useState(requestedUserData.description || '');
-	const notify = useNotify();
 
 	const updateDescription = useCallback(async () => {
 		const response = await fetch('/api/profiles/update-description', {
@@ -57,7 +59,7 @@ export default function Account({ params, loaderData }) {
 		});
 
 		if (!response.ok) {
-			notify.failure(`Failed to update description`, await response.text());
+			notify.failure(`Failed to update description`, null, await response.text());
 			return;
 		}
 
@@ -65,12 +67,92 @@ export default function Account({ params, loaderData }) {
 		setIsEditingDescription(false);
 	}, [notify, temporaryDescription]);
 
+	//^ GPG Key Editing
+	const fingerprintFieldRef = useRef(null);
+	const fingerprintConfirmFieldRef = useRef(null);
+	const [isAddingGPGKey, setIsAddingGPGKey] = useState(false);
+	const [isRemovingGPGKey, setIsRemovingGPGKey] = useState(false);
+	const [isUploadingGPGKey, setIsUploadingGPGKey] = useState(false);
+	const [isRequestingGPGRemoval, setIsRequestingGPGRemoval] = useState(false);
+
+	const [GPGFingerprintToRemove, setGPGFingerprintToRemove] = useState('');
+	const [newGPGFingerprint, setNewGPGFingerprint] = useState('');
+	const [fingerprintRemovalConfirmation, setFingerprintRemovalConfirmation] = useState('');
+
+	const isFingerprintValid = useMemo(() => {
+		return [40, 64].includes(newGPGFingerprint.length) && /^[0-9a-fA-F]*$/.test(newGPGFingerprint);
+	}, [newGPGFingerprint]);
+
+	const isRemovalFingerprintValid = useMemo(() => {
+		return fingerprintRemovalConfirmation === GPGFingerprintToRemove;
+	}, [GPGFingerprintToRemove, fingerprintRemovalConfirmation]);
+
+	const addGPGKey = useCallback(async () => {
+		setIsUploadingGPGKey(true);
+		const response = await fetch('/api/profiles/add-fingerprint', {
+			body: newGPGFingerprint,
+			method: 'POST'
+		});
+
+		if (!response.ok) {
+			notify.failure('Failed to add OpenPGP key', null, await response.text());
+			setIsUploadingGPGKey(false);
+			setNewGPGFingerprint('');
+			setIsAddingGPGKey(false);
+			return;
+		}
+
+		notify.success('Added OpenPGP key successfully!');
+
+		setRequestedUserData(prev => {
+			return {
+				...prev,
+				gpgKeys: [
+					...prev.gpgKeys,
+					newGPGFingerprint.toUpperCase()
+				]
+			}
+		});
+		setIsUploadingGPGKey(false);
+		setNewGPGFingerprint('');
+		setIsAddingGPGKey(false);
+	}, [newGPGFingerprint, notify]);
+
+	const removeGPGKey = useCallback(async () => {
+		setIsRequestingGPGRemoval(true);
+		const response = await fetch('/api/profiles/remove-fingerprint', {
+			body: GPGFingerprintToRemove,
+			method: 'POST'
+		});
+
+		if (!response.ok) {
+			notify.failure('Failed to remove OpenPGP key', null, await response.text());
+			setIsRequestingGPGRemoval(false);
+			setFingerprintRemovalConfirmation('');
+			setIsRemovingGPGKey(false);
+			return;
+		}
+
+		notify.info('Removed OpenPGP key successfully.');
+
+		setRequestedUserData(prev => {
+			return {
+				...prev,
+				gpgKeys: prev.gpgKeys.filter(k => k !== GPGFingerprintToRemove)
+			}
+		});
+		setIsRequestingGPGRemoval(false);
+		setFingerprintRemovalConfirmation('');
+		setGPGFingerprintToRemove('');
+		setIsRemovingGPGKey(false);
+	}, [GPGFingerprintToRemove, notify]);
+
 	return (
 		<>
-			<meta property="og:title" content={requestedUserData.displayName} />
-			<meta property="twitter:title" content={requestedUserData.displayName} />
-			<meta property="og:description" content={truncateText(requestedUserData.description, 180) || 'No description.'} />
-			<meta name="description" content={truncateText(requestedUserData.description, 180) || 'No description.'} />
+			<meta property='og:title' content={requestedUserData.displayName} />
+			<meta property='twitter:title' content={requestedUserData.displayName} />
+			<meta property='og:description' content={truncateText(requestedUserData.description, 180) || 'No description.'} />
+			<meta name='description' content={truncateText(requestedUserData.description, 180) || 'No description.'} />
 
 			<div className='p-section--hero'>
 				<div className='row--25-75'>
@@ -88,6 +170,12 @@ export default function Account({ params, loaderData }) {
 								/>}
 							</div>
 							<div className='flex-row'>
+								<Chip
+									value={requestedUserData.role[0].toUpperCase() + requestedUserData.role.slice(1)}
+									appearance='information'
+									isReadOnly
+								/>
+
 								{isMe
 								&& <Chip
 									value={isEditingDescription ? 'Cancel' : 'Edit Description'}
@@ -179,7 +267,37 @@ export default function Account({ params, loaderData }) {
 
 								`Member since: ${new Date(requestedUserData.creationDate).toLocaleDateString('en-ZA')}`,
 
-								`OpenPGP public keys: None`,
+								<>
+									<p style={{ margin: 0 }} className='flex-row justify-space-between'>
+										OpenPGP public keys:
+										{/* <FontAwesomeIcon
+											icon={faPencil}
+											style={{ padding: 4, backgroundColor: '#FFFFFF44' }}
+										/> */}
+										<Chip
+											value={'Add'}
+											iconName={ICONS.plus}
+											appearance='positive'
+											className='u-no-margin--bottom'
+											onClick={() => setIsAddingGPGKey(true)}
+										/>
+									</p>
+									<List
+										items={requestedUserData.gpgKeys.length
+											? requestedUserData.gpgKeys.map((key, i) => (
+												<span key={i} className='flex-row justify-space-between'>
+													<a target='_blank' rel='noreferrer' href={`https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0x${key.toLowerCase()}`}>{key}</a>
+													<Icon
+														name={ICONS.minus}
+														className='modify-btn'
+														onClick={() => { setGPGFingerprintToRemove(key); setIsRemovingGPGKey(true); }}
+													/>
+												</span>
+											))
+											: ['None registered']
+										}
+									/>
+								</>,
 
 								// Some social mechanics probably not soon to come
 								<>
@@ -195,6 +313,93 @@ export default function Account({ params, loaderData }) {
 					</Col>
 				</Row>
 			</div>
+			{isAddingGPGKey
+			&& <Modal
+				title='Add OpenPGP Key'
+				close={() => { setNewGPGFingerprint(''); setFingerprintRemovalConfirmation(''); setIsAddingGPGKey(false); }}
+				buttonRow={<>
+					<Button
+						appearance='positive'
+						disabled={(!isFingerprintValid) || isUploadingGPGKey}
+						hasIcon={isUploadingGPGKey}
+						onClick={addGPGKey}
+					>
+						{isUploadingGPGKey && <Icon name={`${ICONS.spinner} u-animation--spin`} style={{ marginRight: '0.25em', marginLeft: -1 }} />}
+						Submit
+					</Button>
+				</>}
+				focusRef={fingerprintFieldRef}
+			>
+				<p>
+					To add an OpenPGP/GPG key to Smithy, it must be registered on <a href='https://keyserver.ubuntu.com/' target='_blank' rel='noreferrer'>keyserver.ubuntu.com</a>. Make sure you enter the right fingerprint.
+				</p>
+				<Form onSubmit={ev => { ev.preventDefault();  addGPGKey(); }}>
+					{/* To prevent unnecessary re-renders */}
+					<React.Fragment key=".0">
+						<Input
+							id='openpgp_fingerprint'
+							label='Fingerprint'
+							placeholder='6FDCDB25DD68F9C257DD6B6AAD2B8A9E1D1C31B2'
+							type='text'
+							ref={fingerprintFieldRef}
+							required
+							value={newGPGFingerprint}
+							onChange={e => setNewGPGFingerprint(e.target.value)}
+							error={!isFingerprintValid && newGPGFingerprint}
+							help={
+								(isFingerprintValid || !newGPGFingerprint)
+									? 'Run `gpg --list-keys` to see your available keys and their fingerprints.'
+									: 'Fingerprint must be either 40 or 64 characters long and must only contain valid hex characters.'
+							}
+							disabled={isUploadingGPGKey}
+						/>
+					</React.Fragment>
+				</Form>
+			</Modal>}
+
+			{isRemovingGPGKey
+			&& <Modal
+				title='Are you sure you want to remove this GPG key?'
+				close={() => { setGPGFingerprintToRemove(''); setIsRemovingGPGKey(false); }}
+				buttonRow={<>
+					<Button
+						appearance='negative'
+						disabled={(!isRemovalFingerprintValid) || isRequestingGPGRemoval}
+						hasIcon={isRequestingGPGRemoval}
+						onClick={removeGPGKey}
+					>
+						{isRequestingGPGRemoval && <Icon name={`${ICONS.spinner} u-animation--spin`} style={{ marginRight: '0.25em', marginLeft: -1 }} />}
+						Delete
+					</Button>
+				</>}
+				focusRef={fingerprintConfirmFieldRef}
+			>
+				<p>
+					You won&apos;t be able to add this key again, even if it remains valid on <a href='https://keyserver.ubuntu.com/' target='_blank' rel='noreferrer'>keyserver.ubuntu.com</a>. Fingerprint: {GPGFingerprintToRemove}. Please type it out below:
+				</p>
+				<Form onSubmit={ev => { ev.preventDefault(); removeGPGKey(); }}>
+					{/* To prevent unnecessary re-renders */}
+					<React.Fragment key=".0">
+						<Input
+							id='openpgp_fingerprint'
+							label='Fingerprint'
+							placeholder={GPGFingerprintToRemove}
+							type='text'
+							ref={fingerprintConfirmFieldRef}
+							required
+							value={fingerprintRemovalConfirmation}
+							onChange={e => setFingerprintRemovalConfirmation(e.target.value)}
+							error={!isRemovalFingerprintValid && fingerprintRemovalConfirmation}
+							help={
+								(isRemovalFingerprintValid || !fingerprintRemovalConfirmation)
+									? 'This action can\'t be undone for security reasons.'
+									: 'Fingerprints must match. Try converting it to upper case.'
+							}
+							disabled={isRequestingGPGRemoval}
+						/>
+					</React.Fragment>
+				</Form>
+			</Modal>}
 		</>
 	);
 }

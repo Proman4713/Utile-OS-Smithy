@@ -236,7 +236,7 @@ export default function App({ loaderData }) {
 		<AccountContext.Provider value={{ isAuthenticated: loaderData.authenticated || false, userData: loaderData.userData || {} }}>
 			<NotificationProvider>
 				<PackageProvider>
-					<div style={{ position: 'absolute', width: '90%', left: '5%', top: '6%', zIndex: 99999 }}>
+					<div style={{ position: 'fixed', width: '90%', left: '5%', top: '6%', zIndex: 99999 }}>
 						<NotificationConsumer />
 					</div>
 					<AppNavBar />

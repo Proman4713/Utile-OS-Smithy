@@ -78,3 +78,17 @@
 	display: flex;
 	align-items: flex-end;
 }
+
+.modify-btn {
+	opacity: 0.4;
+	transition: opacity 100ms ease;
+	cursor: pointer;
+}
+
+.modify-btn:hover {
+	opacity: 1;
+}
+
+.modify-btn:active {
+	opacity: 0.7;
+}

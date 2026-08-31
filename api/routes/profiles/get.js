@@ -22,7 +22,12 @@ export default createRouteDefinition(
 			})
 		}
 
-		const requestedUserData = DBProvider.parseAppUserFromDBUser(requestedDatabaseUser);
+		const { results: requestedDatabaseUserGPGKeys } = await DBProvider.DB
+			.prepare('SELECT openpgp_fingerprint FROM gpg_keys WHERE user_id = ? AND status = "valid"')
+			.bind(requestedDatabaseUser.id)
+			.run();
+
+		const requestedUserData = DBProvider.parseAppUserFromDBUser(requestedDatabaseUser, requestedDatabaseUserGPGKeys);
 
 		let areSameUser = false;
 
@@ -54,14 +59,8 @@ export default createRouteDefinition(
 		}
 
 		if (!areSameUser) {
-			const filteredUserData = requestedUserData;
-			delete filteredUserData.connections; // Only publicConnections should be shown
-			delete filteredUserData.email; // Obviously
-
-			return new Response(JSON.stringify(filteredUserData), {
-				headers: CommonData.CORS_HEADERS,
-				status: 200
-			})
+			delete requestedUserData.connections; // Only publicConnections should be shown
+			delete requestedUserData.email; // Obviously
 		}
 
 		// They're the same user, happily return everything
