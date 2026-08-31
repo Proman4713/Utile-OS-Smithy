@@ -69,8 +69,8 @@ export default function Account({ params, loaderData }) {
 		<>
 			<meta property="og:title" content={requestedUserData.displayName} />
 			<meta property="twitter:title" content={requestedUserData.displayName} />
-			<meta property="og:description" content={truncateText(requestedUserData.description, 100) || 'No description.'} />
-			<meta name="description" content={truncateText(requestedUserData.description, 100) || 'No description.'} />
+			<meta property="og:description" content={truncateText(requestedUserData.description, 180) || 'No description.'} />
+			<meta name="description" content={truncateText(requestedUserData.description, 180) || 'No description.'} />
 
 			<div className='p-section--hero'>
 				<div className='row--25-75'>
