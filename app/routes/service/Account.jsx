@@ -209,7 +209,9 @@ export default function Account({ params, loaderData }) {
 
 								{/* Only if it's us and we're editing */}
 								{(isMe && isEditingDescription)
-								&& <Textarea style={{ minHeight: 100, maxHeight: 200, resize: 'vertical' }}
+								&& <Textarea
+									maxLength={400}
+									style={{ minHeight: 100, maxHeight: 200, resize: 'vertical' }}
 									value={temporaryDescription}
 									onChange={e => setTemporaryDescription(e.target.value)}
 								/>}

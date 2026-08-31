@@ -7,6 +7,13 @@ export default createRouteDefinition(
 	async (request, path) => {
 		const newDescription = await request.text();
 
+		if (newDescription?.length > 400) {
+			return new Response('Description too long.', {
+				headers: CommonData.CORS_HEADERS,
+				status: 413
+			});
+		}
+
 		// TODO: Adapt to multiple OAuth providers
 		const userAccessToken = getCookie(request.headers.get('cookie'), 'access_token');
 		if (!userAccessToken) {
