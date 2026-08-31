@@ -274,24 +274,26 @@ export default function Account({ params, loaderData }) {
 											icon={faPencil}
 											style={{ padding: 4, backgroundColor: '#FFFFFF44' }}
 										/> */}
-										<Chip
+										{isMe
+										&& <Chip
 											value={'Add'}
 											iconName={ICONS.plus}
 											appearance='positive'
 											className='u-no-margin--bottom'
 											onClick={() => setIsAddingGPGKey(true)}
-										/>
+										/>}
 									</p>
 									<List
 										items={requestedUserData.gpgKeys.length
 											? requestedUserData.gpgKeys.map((key, i) => (
 												<span key={i} className='flex-row justify-space-between'>
 													<a target='_blank' rel='noreferrer' href={`https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0x${key.toLowerCase()}`}>{key}</a>
-													<Icon
+													{isMe
+													&& <Icon
 														name={ICONS.minus}
 														className='modify-btn'
 														onClick={() => { setGPGFingerprintToRemove(key); setIsRemovingGPGKey(true); }}
-													/>
+													/>}
 												</span>
 											))
 											: ['None registered']
