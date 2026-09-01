@@ -147,6 +147,8 @@ export default function Account({ params, loaderData }) {
 		setIsRemovingGPGKey(false);
 	}, [GPGFingerprintToRemove, notify]);
 
+	console.log(requestedUserData.gpgKeys); // debugging certain issue with new user
+
 	return (
 		<>
 			<meta property='og:title' content={requestedUserData.displayName} />
@@ -211,7 +213,7 @@ export default function Account({ params, loaderData }) {
 								{(isMe && isEditingDescription)
 								&& <Textarea
 									maxLength={400}
-									style={{ minHeight: 100, maxHeight: 200, resize: 'vertical' }}
+									style={{ minHeight: 200, maxHeight: 300, resize: 'vertical' }}
 									value={temporaryDescription}
 									onChange={e => setTemporaryDescription(e.target.value)}
 								/>}

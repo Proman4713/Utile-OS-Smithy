@@ -119,7 +119,7 @@ export default createRouteDefinition(
 				.bind(
 					authResult.data.name,
 					authResult.data.id,
-					authResult.data.name.toLowerCase(),
+					authResult.data.login.toLowerCase().replace(/\s+/g, '_').trim(), // Fixes character issues
 					authResult.data.name,
 					...(authResult.data.email ? [authResult.data.email] : [])
 				)

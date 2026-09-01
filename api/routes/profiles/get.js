@@ -6,6 +6,7 @@ import { getCookie } from '../../utils/toolkit';
 export default createRouteDefinition(
 	async (request, path) => {
 		const username = request.headers.get('username');
+		console.log(`Fetching profile for ${username}`);
 
 		/**
 		 * @type {DBUser}
@@ -62,6 +63,8 @@ export default createRouteDefinition(
 			delete requestedUserData.connections; // Only publicConnections should be shown
 			delete requestedUserData.email; // Obviously
 		}
+
+		//dbg console.log(`Returning profile for ${username}`, requestedUserData.displayName, requestedUserData.gpgKeys);
 
 		// They're the same user, happily return everything
 		return new Response(JSON.stringify(requestedUserData), {

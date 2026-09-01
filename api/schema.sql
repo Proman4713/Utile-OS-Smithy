@@ -97,3 +97,8 @@ ALTER TABLE source_package_uploads ADD COLUMN suite TEXT NOT NULL;
 ALTER TABLE source_package_uploads ADD COLUMN section TEXT NOT NULL;
 ALTER TABLE source_packages DROP COLUMN current_deb_control; -- The archives already give us all the information we currently need
 ALTER TABLE gpg_keys ADD COLUMN revocation_date TEXT;
+
+ALTER TABLE users RENAME COLUMN description TO description_old;
+ALTER TABLE users ADD COLUMN description TEXT DEFAULT ''; -- Fixes null issues
+UPDATE users SET description = description_old;
+ALTER TABLE users DROP COLUMN description_old;
