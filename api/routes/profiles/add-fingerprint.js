@@ -8,10 +8,8 @@ export default createRouteDefinition(
 		const newFingerprint = await request.text();
 
 		// TODO: Implement a key verification method to avoid attackers locking a legitimate person out of using their key.
-		return new Response('Under Maintenance', {
-			headers: CommonData.CORS_HEADERS,
-			status: 503
-		});
+		// TODO: 	I do not think this is strictly necessary, especially at our current scale, but it would be nice to verify 
+		// TODO: 	that the user actually owns the key they're adding.
 
 		// Check that key exists
 		const keyserverResult = await fetch(`https://keyserver.ubuntu.com/pks/lookup?fingerprint=on&op=index&search=0x${newFingerprint.toLowerCase()}`);
