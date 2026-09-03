@@ -93,9 +93,17 @@ function AppNavBar() {
 					label: 'Maintainers',
 					url: '#'
 				}, {
-					label: 'User Support',
+					/*
+						I don't want casual user support to be on this very technical website. So let's make this strictly for advanced users
+						and developers who want to target their requests at developers specifically, while keeping the casual user to the main, fancy Utile OS website.
+					*/
+					label: 'Advanced Support',
 					url: '#'
 				}, {
+					/*
+						However, this UI is perfectly suitable for an in-depth wiki for technical and casual users alike; however, I'm still keeping the distinction
+						between consumer topics and more technical ones by keeping those in 'Developer Docs'
+					*/
 					label: 'User Wiki',
 					url: '#'
 				}, {

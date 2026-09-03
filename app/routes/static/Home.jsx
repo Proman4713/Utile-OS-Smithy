@@ -1,5 +1,5 @@
 import { Button, Col, Row } from '@canonical/react-components';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 /**
  * @type {import('react-router').MetaFunction}
@@ -9,6 +9,8 @@ export const meta = () => [
 ];
 
 export default function Home() {
+	const navigate = useNavigate();
+
 	return (
 		<>
 			<meta property="og:title" content="Homepage" />
@@ -29,7 +31,7 @@ export default function Home() {
 						<Button>
 							Build
 						</Button>
-						<Button appearance='base'>
+						<Button appearance='base' onClick={() => navigate('/archives')}>
 							View Packages
 						</Button>
 					</div>
@@ -40,8 +42,7 @@ export default function Home() {
 					<hr />
 					<Col size={6}>
 						<h2>Built on the Vanilla UI framework</h2>
-						{/* Funny how 'we' have NO users lol, still gotta call them amazing */}
-						<p>The Utile OS Smithy is easy to use for our maintainers <i>and</i> amazing end users. It&apos;s a functional interface for all of our software packages and bug reports.</p>
+						<p>Smithy is easy to use for our maintainers <i>and</i> aspiring contributors. It&apos;s a functional interface for all of our software packages, developer documentation, and technical bug reports.</p>
 					</Col>
 					<Col size={6}>
 						<h2>Designed for scalability</h2>
