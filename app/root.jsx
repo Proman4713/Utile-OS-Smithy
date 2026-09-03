@@ -253,7 +253,8 @@ export default function App({ loaderData }) {
 					<footer className='l-footer--sticky p-strip'>
 						<div className='l-docs__subgrid'>
 							<div className='l-docs__sidebar u-fixed-width'>
-								<p>Licensed GPLv3</p>
+								<p>Copyright © 2026 Aaser Abd-el Sabour</p>
+								<p>Licensed under the <a href='https://github.com/Proman4713/Utile-OS-Smithy/tree/master/LICENSE'>AGPLv3</a> license</p>
 							</div>
 							<div className='l-docs__main'>
 								<Row>
