@@ -77,7 +77,7 @@ export default function Package({ loaderData }) {
 							items={[
 								suite,
 								component,
-								...(loaderData.packageMatches[0].source ? [`source: ${loaderData.packageMatches[0].source}`] : [])
+								<span key={2}>source: <Link to={`/archives/sources/${loaderData.packageMatches[0].source}`}>{loaderData.packageMatches[0].source}</Link></span>
 							]}
 							middot
 							className='u-no-margin--bottom'
@@ -93,7 +93,6 @@ export default function Package({ loaderData }) {
 								split
 								divided
 								items={[
-									// TODO: Should the maintainer be retrieved from the database rather than the package info?
 									<span key={0}>
 										Maintainer:&nbsp;
 										<a href={`mailto:${loaderData.packageMatches[0].maintainer.split('<')[1].replace('>', '')}`}>

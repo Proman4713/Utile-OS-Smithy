@@ -30,14 +30,15 @@ export const loadArchivePackages = async () => {
 				if (!response.ok) return { failed: true };
 
 				const htmlContent = await response.text();
-				const packages = htmlContent.split('\n\n').map(block => {
-					const lines = block.split('\n');
-					const obj = { _component: component };
+				const packages = htmlContent.split('\n\n').map(stanza => {
+					const lines = stanza.split('\n');
+
+					const metadata = {};
 					lines.forEach(line => {
 						const [key, ...val] = line.split(': ');
-						if (key) obj[key] = val.join(': ');
+						if (key) metadata[key] = val.join(': '); // The value could have a colon in it
 					});
-					return obj;
+					return metadata;
 				}).filter(p => p.Package);
 
 				for (const pkg of packages) {
@@ -53,7 +54,8 @@ export const loadArchivePackages = async () => {
 						section: pkg.Section,
 						version: pkg.Version,
 						maintainer: pkg.Maintainer,
-						source: pkg.Source
+						originalMaintainer: pkg['Original-Maintainer'],
+						source: pkg.Source || pkg.Package // If the package source is the same name as the package, the Source field is omitted
 					})
 				}
 			}
