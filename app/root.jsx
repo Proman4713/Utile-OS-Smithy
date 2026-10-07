@@ -45,7 +45,7 @@ export function Layout({ children }) {
 				<meta charSet="utf-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1" />
 
-				{/* Embed Data */}
+				{/* Embed Data - og/twitter:title, description and og:description omitted for per-route specification, see https://docs.discord.com/developers/link-previews/overview */}
 					{/* Twitter, not X */}
 					<meta content="summary" property="twitter:card" />
 					{/* twitter:title provided per route */}
